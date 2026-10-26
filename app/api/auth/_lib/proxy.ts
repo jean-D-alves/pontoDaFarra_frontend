@@ -40,7 +40,13 @@ export function buildBackendHeaders(
 }
 
 const refreshCookieName = "refresh_token";
-const legacyRefreshCookiePaths = ["/", "/auth", "/api", "/api/auth", "/api/auth/"];
+const legacyRefreshCookiePaths = [
+  "/",
+  "/auth",
+  "/api",
+  "/api/auth",
+  "/api/auth/",
+];
 
 function clearLegacyRefreshCookies(response: NextResponse) {
   for (const path of legacyRefreshCookiePaths) {
@@ -52,11 +58,20 @@ function clearLegacyRefreshCookies(response: NextResponse) {
 }
 
 export async function forwardBackendResponse(backend: Response) {
-  const response = new NextResponse(await backend.text(), {
+  const noBody = [204, 205, 304].includes(backend.status);
+  const text = noBody ? null : await backend.text();
+
+  const headers = new Headers();
+  if (text) {
+    headers.set(
+      "Content-Type",
+      backend.headers.get("content-type") ?? "application/json",
+    );
+  }
+
+  const response = new NextResponse(text, {
     status: backend.status,
-    headers: {
-      "Content-Type": backend.headers.get("content-type") ?? "application/json",
-    },
+    headers,
   });
 
   const setCookies = backend.headers.getSetCookie();

@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useUser } from "@/src/Context/UserContext";
 import Image from "next/image";
 import { Eye, EyeOff } from "lucide-react";
-
+import { formatPhone, isValidPhone, phoneToDigits } from "@/src/Handle/phone";
 type FieldProps = {
   id: string;
   label: string;
@@ -14,6 +14,8 @@ type FieldProps = {
   placeholder: string;
   value: string;
   onChange: (value: string) => void;
+  error?: string;
+  inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
 };
 
 function Field({
@@ -23,6 +25,8 @@ function Field({
   placeholder,
   value,
   onChange,
+  error,
+  inputMode,
 }: FieldProps) {
   const [visible, setVisible] = useState(false);
   const isPassword = type === "password";
@@ -34,12 +38,15 @@ function Field({
         <input
           id={id}
           type={isPassword && visible ? "text" : type}
+          inputMode={inputMode}
           placeholder={placeholder}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className={`h-12 w-full rounded-xl border border-cardline bg-white px-3 ${
-            isPassword ? "pr-12" : ""
-          }`}
+          aria-invalid={!!error}
+          aria-describedby={error ? `${id}-error` : undefined}
+          className={`h-12 w-full rounded-xl border bg-white px-3 ${
+            error ? "border-red-500" : "border-cardline"
+          } ${isPassword ? "pr-12" : ""}`}
           required
         />
         {isPassword && (
@@ -54,13 +61,18 @@ function Field({
           </button>
         )}
       </div>
+      {error && (
+        <p id={`${id}-error`} className="text-sm font-normal text-red-500">
+          {error}
+        </p>
+      )}
     </>
   );
 }
 
 export default function Auth() {
   const router = useRouter();
-  const { signIn } = useUser();
+  const { signIn, signUp } = useUser();
 
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -71,11 +83,16 @@ export default function Auth() {
   const [signUpNome, setSignUpNome] = useState("");
   const [signUpEmail, setSignUpEmail] = useState("");
   const [signUpSenha, setSignUpSenha] = useState("");
+  const [signUpPhoneNumber, setSignUpPhoneNumber] = useState("");
 
   function toggleScreen() {
     setError(null);
     setIsLogin((prev) => !prev);
   }
+  const phoneError =
+    signUpPhoneNumber && !isValidPhone(signUpPhoneNumber)
+      ? "Use +99(99)9999-9999 ou +99(99)99999-9999"
+      : undefined;
 
   async function handleSignIn(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -95,9 +112,22 @@ export default function Auth() {
   async function handleSignUp(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
+
+    if (!isValidPhone(signUpPhoneNumber)) {
+      setError("Telefone inválido");
+      return;
+    }
+
     setLoading(true);
     try {
-      console.log({ signUpNome, signUpEmail, signUpSenha });
+      const ok = await signUp(
+        signUpNome,
+        signUpEmail,
+        signUpSenha,
+        phoneToDigits(signUpPhoneNumber), 
+      );
+      if (!ok) throw new Error("Email ou senha inválidos");
+      router.push("/");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao criar conta");
     } finally {
@@ -206,6 +236,15 @@ export default function Auth() {
             placeholder="Senha"
             value={signUpSenha}
             onChange={setSignUpSenha}
+          />
+          <Field
+            id="signup-phonenumber"
+            label="Digite seu telefone"
+            placeholder="+55(84)99999-9999"
+            value={signUpPhoneNumber}
+            onChange={(v) => setSignUpPhoneNumber(formatPhone(v))}
+            inputMode="tel"
+            error={phoneError}
           />
           <button
             disabled={loading}

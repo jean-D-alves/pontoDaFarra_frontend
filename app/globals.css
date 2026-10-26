@@ -22,17 +22,17 @@
   --color-ink: #000000;
 
   /* Superfícies */
-  --color-surface: #f4f4f4;       /* fundo da foto do produto, bloco do WhatsApp */
-  --color-surface-soft: #f7f7f7;  /* fundo do campo de busca */
+  --color-surface: #f4f4f4; /* fundo da foto do produto, bloco do WhatsApp */
+  --color-surface-soft: #f7f7f7; /* fundo do campo de busca */
 
   /* Bordas */
-  --color-line: #e5e5e5;          /* borda dos cards */
-  --color-line-soft: #eeeeee;     /* linhas do menu */
-  --color-line-strong: #d5d5d5;   /* borda do campo de busca */
+  --color-line: #e5e5e5; /* borda dos cards */
+  --color-line-soft: #eeeeee; /* linhas do menu */
+  --color-line-strong: #d5d5d5; /* borda do campo de busca */
 
   /* Textos */
-  --color-muted: #6b6b6b;         /* subtítulos, "foto do produto" */
-  --color-body: #444444;          /* texto de apoio */
+  --color-muted: #6b6b6b; /* subtítulos, "foto do produto" */
+  --color-body: #444444; /* texto de apoio */
   --color-text: #ffe7e7;
 
   /* Rodapé */
@@ -49,6 +49,21 @@
     var(--color-brand-mid),
     var(--color-brand-deep)
   );
+}
+
+@utility loading {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e0e0e0;
+  border-top-color: var(--color-brand);
+  border-radius: 50%;
+  animation: RunLoading 0.8s linear infinite;
+}
+
+@keyframes RunLoading {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 body {

@@ -9,14 +9,27 @@ import {
   useState,
 } from "react";
 import { type User } from "../types/User";
-import { RequestMe, requestRefresh, requestSignIn } from "../Handle/User";
+import {
+  requestLogout,
+  RequestMe,
+  requestRefresh,
+  requestSignIn,
+  requestSignUp,
+} from "../Handle/User";
 
 type UserContextType = {
   user: User | null;
   setUser: (user: User | null) => void;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<boolean>;
+  signUp: (
+    name: string,
+    email: string,
+    password: string,
+    phoneNumber: string,
+  ) => Promise<boolean>;
   refresh: () => Promise<boolean>;
+  logout: () => Promise<boolean>;
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -28,6 +41,14 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const refresh = useCallback(async () => {
     try {
       const data = await requestRefresh();
+      return data !== null;
+    } catch {
+      return false;
+    }
+  }, []);
+  const logout = useCallback(async () => {
+    try {
+      const data = await requestLogout();
       return data !== null;
     } catch {
       return false;
@@ -79,9 +100,32 @@ export function UserProvider({ children }: { children: ReactNode }) {
     },
     [loadUser],
   );
+  const signUp = useCallback(
+    async (
+      name: string,
+      email: string,
+      password: string,
+      phoneNumber: string,
+    ) => {
+      const data = await requestSignUp(name, email, password, phoneNumber);
+      if (!data) return false;
+
+      try {
+        const me = await loadUser();
+        setUser(me);
+        return me !== null;
+      } catch {
+        setUser(null);
+        return false;
+      }
+    },
+    [loadUser],
+  );
 
   return (
-    <UserContext.Provider value={{ user, setUser, loading, signIn, refresh }}>
+    <UserContext.Provider
+      value={{ user, setUser, loading, signIn, signUp, refresh, logout }}
+    >
       {children}
     </UserContext.Provider>
   );
