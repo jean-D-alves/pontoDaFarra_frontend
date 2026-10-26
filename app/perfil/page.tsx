@@ -1,8 +1,10 @@
 "use client";
 import Header from "@/src/components/header/Header";
 import Loading from "@/src/components/Loading";
+import ModelUpdate from "@/src/components/ModelUpdate";
 import { useUser } from "@/src/Context/UserContext";
 import { Category } from "@/src/types/category";
+import { PencilIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -15,17 +17,18 @@ const mockCategories: Category[] = [
 
 export default function Perfil() {
   const router = useRouter();
-  const { user, logout } = useUser();
+  const { user, logout, refresh, loading: userLoading } = useUser();
 
   useEffect(() => {
-    if (user == undefined) {
+    if (!userLoading && !user) {
       router.push("/");
     }
-  }, []);
+  }, [user, userLoading, router]);
 
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [model, setModel] = useState<boolean>(false);
 
   function GetInitial(name: string | undefined): string | null {
     if (!name) {
@@ -54,12 +57,20 @@ export default function Perfil() {
   return (
     <>
       <Header categories={mockCategories} cartCount={0} activeSlug="cerveja" />
-      <main className="flex flex-1 w-full h-full bg-line-strong">
-        <section className="flex flex-col w-1/3 justify-center items-center bg-background m-4 p-20">
+
+      <main className="flex flex-1 flex-col w-full h-full bg-line-strong sm:flex-row">
+        <section className="flex flex-col w-full justify-center items-center bg-background rounded-2xl m-4 p-12 sm:w-1/3">
           {loading ? (
             <Loading />
           ) : (
-            <ul className="flex flex-col h-full items-center justify-center gap-8">
+            <ul className="relative flex flex-col h-full items-center justify-center gap-8">
+              <PencilIcon
+                className="absolute top-1 right-1 cursor-pointer"
+                size={18}
+                onClick={() => {
+                  setModel(true);
+                }}
+              />
               <li>
                 <p className=" flex w-30 h-30 text-3xl rounded-full justify-center items-center bg-brand-mid">
                   <strong>{GetInitial(user?.name)}</strong>
@@ -87,21 +98,28 @@ export default function Perfil() {
               </li>
               <li>
                 <button
-                  className="flex bg-brand-gradient px-20 py-2 rounded-2xl"
+                  className="flex bg-brand-gradient px-20 py-2 items-center gap-2 rounded-2xl cursor-pointer"
                   onClick={() => handleLogout()}
                 >
-                  sair
+                  sair da conta
                 </button>
               </li>
               <li>
-                <button className="flex bg-red-600 text-text px-20 py-2 rounded-2xl">
+                <button className="flex bg-red-600 text-text px-20 py-2 rounded-2xl cursor-pointer">
                   Apagar conta
                 </button>
               </li>
             </ul>
           )}
+          {model && (
+            <ModelUpdate
+              user={user}
+              onClose={() => setModel(false)}
+              refresh={refresh}
+            />
+          )}
         </section>
-        <section className="flex flex-col w-full justify-center items-center bg-background m-4"></section>
+        <section className="flex flex-col w-full justify-center items-center bg-background rounded-2xl m-4"></section>
       </main>
     </>
   );

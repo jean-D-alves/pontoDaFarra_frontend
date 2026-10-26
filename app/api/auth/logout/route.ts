@@ -6,7 +6,7 @@ import {
   forwardBackendResponse,
   missingConfigResponse,
   unavailableResponse,
-} from "../_lib/proxy";
+} from "../../_lib/proxy";
 
 export async function POST(request: NextRequest) {
   if (!backendUrl || !apiKey) return missingConfigResponse();
