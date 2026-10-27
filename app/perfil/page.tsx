@@ -1,8 +1,10 @@
 "use client";
+import ConfirmMessage from "@/src/components/ConfirmMessage";
 import Header from "@/src/components/header/Header";
 import Loading from "@/src/components/Loading";
 import ModelUpdate from "@/src/components/ModelUpdate";
 import { useUser } from "@/src/Context/UserContext";
+import { requestDeleteUser } from "@/src/Handle/User";
 import { Category } from "@/src/types/category";
 import { PencilIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -27,6 +29,7 @@ export default function Perfil() {
 
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [model, setModel] = useState<boolean>(false);
 
@@ -53,7 +56,26 @@ export default function Perfil() {
       setLoading(false);
     }
   }
+  async function handleDelete() {
+    setError(null);
+    setLoading(true);
+    try {
+      console.log("1. chamando delete");
+      const ok = await requestDeleteUser();
+      console.log("2. delete retornou:", ok);
+      if (!ok) throw new Error("Não foi possivel apagar a conta");
 
+      console.log("3. chamando logout");
+      await logout();
+      console.log("4. logout terminou");
+      router.push("/");
+    } catch (err) {
+      console.error("handleDelete falhou:", err);
+      setError(err instanceof Error ? err.message : "Erro ao apagar a conta");
+    } finally {
+      setLoading(false);
+    }
+  }
   return (
     <>
       <Header categories={mockCategories} cartCount={0} activeSlug="cerveja" />
@@ -71,44 +93,33 @@ export default function Perfil() {
                   setModel(true);
                 }}
               />
-              <li>
-                <p className=" flex w-30 h-30 text-3xl rounded-full justify-center items-center bg-brand-mid">
-                  <strong>{GetInitial(user?.name)}</strong>
-                </p>
-              </li>
-              <li>
-                <p>
-                  <strong>{user?.name}</strong>
-                </p>
-              </li>
-              <li>
-                <p>
-                  <strong>{user?.email}</strong>
-                </p>
-              </li>
-              <li>
-                <p>
-                  <strong>{user?.phoneNumber}</strong>
-                </p>
-              </li>
-              <li>
-                <p>
-                  <strong>{user?.role}</strong>
-                </p>
-              </li>
-              <li>
-                <button
-                  className="flex bg-brand-gradient px-20 py-2 items-center gap-2 rounded-2xl cursor-pointer"
-                  onClick={() => handleLogout()}
-                >
-                  sair da conta
-                </button>
-              </li>
-              <li>
-                <button className="flex bg-red-600 text-text px-20 py-2 rounded-2xl cursor-pointer">
-                  Apagar conta
-                </button>
-              </li>
+              <p className=" flex w-30 h-30 text-3xl rounded-full justify-center items-center bg-brand-mid">
+                <strong>{GetInitial(user?.name)}</strong>
+              </p>
+              <p>
+                <strong>{user?.name}</strong>
+              </p>
+              <p>
+                <strong>{user?.email}</strong>
+              </p>
+              <p>
+                <strong>{user?.phoneNumber}</strong>
+              </p>
+              <p>
+                <strong>{user?.role}</strong>
+              </p>
+              <button
+                className="flex bg-brand-gradient px-20 py-2 items-center gap-2 rounded-2xl cursor-pointer"
+                onClick={() => handleLogout()}
+              >
+                sair da conta
+              </button>
+              <button
+                className="flex bg-red-600 text-text px-20 py-2 rounded-2xl cursor-pointer"
+                onClick={() => setConfirmDelete(true)}
+              >
+                Apagar conta
+              </button>
             </ul>
           )}
           {model && (
@@ -116,6 +127,19 @@ export default function Perfil() {
               user={user}
               onClose={() => setModel(false)}
               refresh={refresh}
+            />
+          )}
+          {confirmDelete && (
+            <ConfirmMessage
+              variant="danger"
+              title="Apagar conta?"
+              message="Essa ação não pode ser desfeita. Deseja mesmo apagar sua conta?"
+              confirmLabel="Apagar"
+              onConfirm={() => {
+                setConfirmDelete(false);
+                handleDelete();
+              }}
+              onCancel={() => setConfirmDelete(false)}
             />
           )}
         </section>

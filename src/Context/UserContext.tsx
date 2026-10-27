@@ -15,7 +15,8 @@ import {
   requestRefresh,
   requestSignIn,
   requestSignUp,
-} from "../Handle/User";
+} from "../Handle/Auth";
+import { isNullOrUndefined } from "util";
 
 type UserContextType = {
   user: User | null;
@@ -49,6 +50,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(async () => {
     try {
       const data = await requestLogout();
+      setUser(null)
       return data !== null;
     } catch {
       return false;
