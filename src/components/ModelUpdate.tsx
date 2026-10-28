@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { User } from "../types/User";
 import { formatPhone, isValidPhone } from "@/src/Handle/phone";
 import { X } from "lucide-react";
-import { RequestMe, requestUpdateUser } from "../Handle/User";
+import { requestUpdateUser } from "../Handle/User";
 
 type FieldProps = {
   id: string;

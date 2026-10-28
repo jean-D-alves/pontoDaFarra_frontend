@@ -35,6 +35,21 @@
   --color-body: #444444; /* texto de apoio */
   --color-text: #ffe7e7;
 
+  /* Detalhe do produto */
+  --color-line-warm: #d6d3cb; /* bordas de chips, botões e lista de detalhes */
+  --color-stone: #57534e; /* texto secundário quente */
+  --color-stone-strong: #1c1917; /* títulos e preços */
+  --color-promo-bg: #fef3c7; /* etiqueta de promoção */
+  --color-promo-text: #92400e;
+  --color-available-bg: #dcfce7; /* chip "Disponível" */
+  --color-available-text: #166534;
+  --color-unavailable-bg: #fee2e2; /* chip "Indisponível" */
+  --color-unavailable-text: #991b1b;
+  --color-disabled-bg: #e7e5df; /* botão desabilitado */
+  --color-disabled-text: #57534e;
+  --color-placeholder-a: #f5f5f4; /* listras do placeholder de imagem */
+  --color-placeholder-b: #ece9e2;
+
   /* Rodapé */
   --color-footer-text: #e8e8e8;
   --color-footer-muted: #bbbbbb;

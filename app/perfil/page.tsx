@@ -5,17 +5,9 @@ import Loading from "@/src/components/Loading";
 import ModelUpdate from "@/src/components/ModelUpdate";
 import { useUser } from "@/src/Context/UserContext";
 import { requestDeleteUser } from "@/src/Handle/User";
-import { Category } from "@/src/types/category";
 import { PencilIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-
-const mockCategories: Category[] = [
-  { id: 1, name: "Oferta", slug: "oferta" },
-  { id: 2, name: "Cerveja", slug: "cerveja" },
-  { id: 3, name: "Tira-gosto", slug: "tira-gosto" },
-  { id: 4, name: "Destilado", slug: "destilado" },
-];
 
 export default function Perfil() {
   const router = useRouter();
@@ -78,7 +70,7 @@ export default function Perfil() {
   }
   return (
     <>
-      <Header categories={mockCategories} cartCount={0} activeSlug="cerveja" />
+      <Header />
 
       <main className="flex flex-1 flex-col w-full h-full bg-line-strong sm:flex-row">
         <section className="flex flex-col w-full justify-center items-center bg-background rounded-2xl m-4 p-12 sm:w-1/3">

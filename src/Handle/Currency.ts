@@ -1,0 +1,8 @@
+const currency = new Intl.NumberFormat("pt-BR", {
+  style: "currency",
+  currency: "BRL",
+});
+
+export function formatCurrency(value: number): string {
+  return currency.format(Number(value) || 0);
+}
