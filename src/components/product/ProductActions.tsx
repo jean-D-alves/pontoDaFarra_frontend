@@ -5,9 +5,26 @@ import WhatsAppOrderButton from "./WhatsAppOrderButton";
 import AddToCartButton from "../AddToCartButton";
 
 export default function ProductActions({ product }: { product: Product }) {
+  const unitPrice = Number(product.value);
+
   return (
     <div className="flex flex-wrap items-center gap-3">
-      <AddToCartButton product={product}/>
+      <AddToCartButton product={product} />
+
+      <WhatsAppOrderButton
+        order={{
+          totalValue: unitPrice,
+          items: [
+            {
+              productId: product.productId,
+              quantity: 1,
+              unitPrice,
+            },
+          ],
+        }}
+        itemNames={{ [product.productId]: product.name }}
+        isAvailable={product.isAvailable}
+      />
 
       <Link
         href="/categoria"
