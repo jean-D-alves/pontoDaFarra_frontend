@@ -3,6 +3,7 @@ import ConfirmMessage from "@/src/components/ConfirmMessage";
 import Header from "@/src/components/header/Header";
 import Loading from "@/src/components/Loading";
 import ModelUpdate from "@/src/components/ModelUpdate";
+import OrderHistory from "@/src/components/profile/OrderHistory";
 import { useUser } from "@/src/Context/UserContext";
 import { requestDeleteUser } from "@/src/Handle/User";
 import { PencilIcon } from "lucide-react";
@@ -72,12 +73,12 @@ export default function Perfil() {
     <>
       <Header />
 
-      <main className="flex flex-1 flex-col w-full h-full bg-line-strong sm:flex-row">
-        <section className="flex flex-col w-full justify-center items-center bg-background rounded-2xl m-4 p-12 sm:w-1/3">
+      <main className="flex flex-1 flex-col w-full h-full bg-line-strong lg:flex-row">
+        <section className="flex flex-col w-full justify-center items-center bg-background rounded-2xl m-4 p-12 lg:w-[390px] lg:shrink-0">
           {loading ? (
             <Loading />
           ) : (
-            <ul className="relative flex flex-col h-full items-center justify-center gap-8">
+            <ul className="relative flex flex-col h-full items-center gap-8">
               <PencilIcon
                 className="absolute top-1 right-1 cursor-pointer"
                 size={18}
@@ -135,7 +136,9 @@ export default function Perfil() {
             />
           )}
         </section>
-        <section className="flex flex-col w-full justify-center items-center bg-background rounded-2xl m-4"></section>
+        <section className="flex flex-col w-full min-w-0 flex-1 bg-background rounded-2xl m-4 p-6 lg:p-8">
+          <OrderHistory />
+        </section>
       </main>
     </>
   );

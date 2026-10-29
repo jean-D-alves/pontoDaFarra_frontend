@@ -1,9 +1,6 @@
 import type { OrderItem, OrderPayload } from "@/src/types/cart";
+import type { OrdersResponse } from "../types/order";
 
-/**
- * Envia o pedido pelo proxy do Next (`app/api/order/route.ts`), que por sua vez
- * encaminha para o backend. O navegador nunca chama o backend diretamente.
- */
 export async function requestOrder(
   order: Pick<OrderPayload, "totalValue" | "items">,
 ): Promise<boolean> {
@@ -23,4 +20,30 @@ export async function requestOrder(
   });
 
   return response.ok;
+}
+
+export async function requestOrderMe(): Promise<OrdersResponse> {
+  const response = await fetch("/api/order/me", {
+    method: "GET",
+    credentials: "include",
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw new Error(`Falha ao buscar os pedidos (${response.status}).`);
+  }
+
+  return (await response.json()) as OrdersResponse;
+}
+
+export async function requestOrderDelete(id: string): Promise<void> {
+  const response = await fetch(`/api/order/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+    credentials: "include",
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw new Error(`Falha ao excluir o pedido (${response.status}).`);
+  }
 }
