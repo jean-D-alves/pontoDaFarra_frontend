@@ -7,6 +7,7 @@ import OrderHistory from "@/src/components/profile/OrderHistory";
 import { useUser } from "@/src/Context/UserContext";
 import { requestDeleteUser } from "@/src/Handle/User";
 import { PencilIcon } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -100,18 +101,24 @@ export default function Perfil() {
               </p>
               <p>
                 <strong>{user?.role}</strong>
+                <Link
+                  href="/admin"
+                  className="text-sm text-text hidden md:block"
+                >
+                  Pagina de Admin
+                </Link>
               </p>
               <button
                 className="flex bg-brand-gradient text-ink px-20 py-2 items-center gap-2 rounded-2xl cursor-pointer"
                 onClick={() => handleLogout()}
               >
-                sair da conta
+                <strong>sair da conta</strong>
               </button>
               <button
                 className="flex bg-red-600 text-text px-20 py-2 rounded-2xl cursor-pointer"
                 onClick={() => setConfirmDelete(true)}
               >
-                Apagar conta
+                <strong>Apagar conta</strong>
               </button>
             </ul>
           )}

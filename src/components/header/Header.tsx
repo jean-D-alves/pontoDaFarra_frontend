@@ -64,13 +64,16 @@ export default function Header() {
               <SearchInput />
             </div>
             {user ? (
-              <MenuUser user={user} />
+              <>
+                <MenuUser user={user} />
+                <CartButton />
+
+              </>
             ) : (
               <Link href="/auth" className="text-sm text-black hidden md:block">
                 Entrar
               </Link>
             )}
-            <CartButton />
           </div>
 
           {categoriesStatus === "loading" && (

@@ -1,14 +1,17 @@
-import type { ReactNode } from "react";
+import AdminSidebar from "@/src/components/Admin/adminSidebar";
 import Header from "@/src/components/header/Header";
-export const instant = false;
+import { ReactNode } from "react";
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-screen flex-col overflow-x-clip bg-[#D4D4D4]">
+    <div className="min-h-screen bg-[#D4D4D4]">
       <Header />
+      <div className="flex flex-col gap-4 p-4 lg:flex-row lg:items-stretch">
+        <AdminSidebar />
 
-      <div className="mx-auto flex w-full max-w-[1440px] flex-1 flex-col gap-4 p-4 lg:flex-row lg:items-start">
-        {children}
+        <main className="min-w-0 flex-1 rounded-2xl bg-white p-8">
+          {children}
+        </main>
       </div>
     </div>
   );
