@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import type { Product } from "@/src/types/Products";
-import WhatsAppOrderButton from "./WhatsAppOrderButton";
+import WhatsAppOrderButton from "../WhatsAppOrderButton";
 import AddToCartButton from "../AddToCartButton";
 
 export default function ProductActions({ product }: { product: Product }) {

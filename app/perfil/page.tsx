@@ -143,6 +143,8 @@ export default function Perfil() {
             />
           )}
         </section>
+<section className="flex flex-col w-full min-w-0 justify-start items-center bg-background text-text rounded-2xl m-4 py-10 px-12 lg:flex-1">          <OrderHistory />
+        </section>
       </main>
     </>
   );

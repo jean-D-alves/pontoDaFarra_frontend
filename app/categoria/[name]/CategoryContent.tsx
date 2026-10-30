@@ -89,7 +89,7 @@ export default function CategoryContent({ name }: { name: string }) {
           <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             {products.items.map((product) => (
               <li key={product.productId}>
-                <ProductCard product={product} />
+                <ProductCard key={product.productId} product={product} />
               </li>
             ))}
           </ul>
