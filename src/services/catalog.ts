@@ -19,20 +19,11 @@ async function requestBackend<T>(path: string): Promise<T | null> {
 
   return (await response.json()) as T;
 }
-
-/**
- * Busca o produto no backend. `React.cache` deduplica a chamada entre
- * `generateMetadata` e a página dentro da mesma requisição.
- */
 export const getProductById = cache(
   (productId: string): Promise<Product | null> =>
     requestBackend<Product>(`/products/${encodeURIComponent(productId)}`),
 );
 
-/**
- * O nome da categoria é complementar: se o endpoint falhar, a página
- * continua funcionando com o fallback "Categoria".
- */
 export const getCategoryById = cache(
   async (categoryId: string): Promise<Category | null> => {
     if (!categoryId) return null;

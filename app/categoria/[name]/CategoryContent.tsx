@@ -6,8 +6,8 @@ import { RequestName } from "@/src/Handle/Category";
 import { CategoryWithProducts } from "@/src/types/category";
 import EmptyState from "@/src/components/EmptyState";
 import Loading from "@/src/components/Loading";
-import Pagination from "@/src/components/Pagination";
 import ProductCard from "@/src/components/ProductCard";
+import Pagination from "@/src/components/Pagination";
 
 const PAGE_SIZE = 10;
 
@@ -16,50 +16,35 @@ export default function CategoryContent({ name }: { name: string }) {
   const [data, setData] = useState<CategoryWithProducts | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
   useEffect(() => {
     let cancelled = false;
 
-    RequestName(name, page, PAGE_SIZE)
-      .then((result) => {
-        if (cancelled) return;
+    async function load() {
+      setLoading(true);
+      setError(null);
 
-        if (!result) {
-          setData(null);
-          setError("Categoria não encontrada ou indisponível no momento.");
-          return;
-        }
+      const result = await RequestName(name, page, PAGE_SIZE);
 
-        setData(result);
-      })
-      .catch(() => {
-        if (cancelled) return;
+      if (cancelled) return;
 
+      if (!result) {
+        setError("Não foi possível carregar os produtos.");
         setData(null);
-        setError(
-          "Não foi possível carregar os produtos. Tente novamente mais tarde.",
-        );
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+      } else {
+        setData(result);
+      }
+      setLoading(false);
+    }
+
+    load();
 
     return () => {
       cancelled = true;
     };
   }, [name, page]);
 
-  function changePage(nextPage: number) {
-    if (nextPage < 1 || nextPage === page) return;
-
-    setLoading(true);
-    setError(null);
-    setPage(nextPage);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
 
   const products = data?.products;
-  const totalPages = products?.totalPages ?? 0;
 
   return (
     <section className="mx-auto w-full max-w-[1000px] px-4 py-6">
@@ -108,16 +93,10 @@ export default function CategoryContent({ name }: { name: string }) {
               </li>
             ))}
           </ul>
-
           <Pagination
-            page={products.page}
-            totalPages={totalPages}
-            hasNext={products.hasNext}
-            hasPrevious={products.hasPrevious}
-            onPageChange={changePage}
-            disabled={loading}
-            ariaLabel="Paginação de produtos"
-            className="mt-8"
+            pageNow={page}
+            totalPages={products.totalPages}
+            onPageChange={setPage}
           />
         </>
       )}
