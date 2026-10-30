@@ -72,7 +72,6 @@ export default function Perfil() {
   }
   return (
     <>
-      <Header />
 
       <main className="flex flex-1 flex-col w-full h-full bg-line-strong lg:flex-row">
         <section className="flex flex-col w-full justify-center items-center bg-ink text-text rounded-2xl m-4 p-12 lg:w-[390px] lg:shrink-0">
@@ -101,12 +100,14 @@ export default function Perfil() {
               </p>
               <p>
                 <strong>{user?.role}</strong>
-                <Link
-                  href="/admin"
-                  className="text-sm text-text hidden md:block"
-                >
-                  Pagina de Admin
-                </Link>
+                {user?.role === "Admin" && (
+                  <Link
+                    href="/admin"
+                    className="text-sm text-text hidden md:block"
+                  >
+                    Pagina de Admin
+                  </Link>
+                )}
               </p>
               <button
                 className="flex bg-brand-gradient text-ink px-20 py-2 items-center gap-2 rounded-2xl cursor-pointer"
@@ -143,7 +144,9 @@ export default function Perfil() {
             />
           )}
         </section>
-<section className="flex flex-col w-full min-w-0 justify-start items-center bg-background text-text rounded-2xl m-4 py-10 px-12 lg:flex-1">          <OrderHistory />
+        <section className="flex flex-col w-full min-w-0 justify-start items-center bg-background text-text rounded-2xl m-4 py-10 px-12 lg:flex-1">
+          {" "}
+          <OrderHistory />
         </section>
       </main>
     </>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Bebas_Neue, Poppins } from "next/font/google";
 import "./globals.css";
 import { UserProvider } from "@/src/Context/UserContext";
+import Header from "@/src/components/header/Header";
 
 const bebasNeue = Bebas_Neue({
   variable: "--font-bebas",
@@ -29,7 +30,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${bebasNeue.variable} ${poppins.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <UserProvider>{children}</UserProvider>
+        <UserProvider>
+          <Header />
+          {children}
+        </UserProvider>
       </body>
     </html>
   );

@@ -6,7 +6,6 @@ import CategoryContent from "./CategoryContent";
 export default function CategoryName({ params }: PageProps<"/categoria/[name]">) {
   return (
     <>
-      <Header />
 
       <Suspense
         fallback={

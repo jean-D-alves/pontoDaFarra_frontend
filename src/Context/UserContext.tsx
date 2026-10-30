@@ -29,6 +29,7 @@ type UserContextType = {
     password: string,
     phoneNumber: string,
   ) => Promise<boolean>;
+  isAdmin: boolean;
   refresh: () => Promise<boolean>;
   logout: () => Promise<boolean>;
 };
@@ -50,7 +51,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(async () => {
     try {
       const data = await requestLogout();
-      setUser(null)
+      setUser(null);
       return data !== null;
     } catch {
       return false;
@@ -123,10 +124,20 @@ export function UserProvider({ children }: { children: ReactNode }) {
     },
     [loadUser],
   );
+  const isAdmin = user?.role === "Admin";
 
   return (
     <UserContext.Provider
-      value={{ user, setUser, loading, signIn, signUp, refresh, logout }}
+      value={{
+        user,
+        setUser,
+        loading,
+        signIn,
+        signUp,
+        refresh,
+        logout,
+        isAdmin,
+      }}
     >
       {children}
     </UserContext.Provider>

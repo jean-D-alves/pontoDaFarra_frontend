@@ -54,7 +54,6 @@ async function CategoriesContent() {
 export default function CategoriesPage() {
   return (
     <>
-      <Header />
 
       <section className="mx-auto w-full max-w-[1000px] px-4 py-6">
         <header className="mb-6">
