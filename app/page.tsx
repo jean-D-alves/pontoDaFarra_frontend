@@ -9,6 +9,7 @@ export default function Page() {
         <h1 className="flex text-2xl">
           <strong>Produtos mais pedidos</strong>
         </h1>
+        <MostOrder />
       </div>
     </div>
   );
