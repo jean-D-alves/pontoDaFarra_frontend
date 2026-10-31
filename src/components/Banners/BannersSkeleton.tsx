@@ -9,7 +9,7 @@ export default function BannersSkeleton() {
       <Banner
         type="first"
         onClick={() => {
-          router.push("/#");
+          router.push("/#most-order");
         }}
       >
         Aproveite os mais pedidos

@@ -22,10 +22,21 @@ export default function CartButton() {
     <Link
       href="/carrinho"
       aria-label={`Carrinho de compras, ${cartCount} item(ns)`}
-      className="flex items-center gap-2 bg-black text-yellow-400 rounded-full px-4 py-2"
+      className="relative flex items-center gap-2 rounded-full bg-black p-2 text-yellow-400 sm:px-4"
     >
       <ShoppingCart size={18} />
-      <span className="text-sm">Carrinho ({cartCount})</span>
+
+      <span className="hidden text-sm sm:inline">Carrinho ({cartCount})</span>
+
+      {/* Mobile: badge com a contagem sobre o ícone */}
+      {cartCount > 0 && (
+        <span
+          aria-hidden="true"
+          className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-yellow-400 px-1 text-xs font-bold text-black sm:hidden"
+        >
+          {cartCount}
+        </span>
+      )}
     </Link>
   );
 }

@@ -53,7 +53,7 @@ export default function Header() {
     <header className="bg-[#f1f1f1] w-full">
       <div className="max-w-[1000px] mx-auto px-4">
         <div className="flex flex-col gap-4 py-4">
-          <div className="flex items-center gap-4 flex-wrap md:flex-nowrap">
+          <div className="flex justify-around items-center gap-4 flex-wrap md:flex-nowrap">
             <Link
               href="/"
               className={`${bebasNeue.className} text-2xl tracking-wide text-black`}
