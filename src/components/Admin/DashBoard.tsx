@@ -185,10 +185,10 @@ export default function TopProductsDashboard({
     <main className="box-border flex min-h-[600px] min-w-0 flex-[999_1_560px] flex-col gap-7 rounded-2xl bg-white p-8">
       <div className="flex flex-col gap-1.5">
         <h1 className="text-[28px] font-bold leading-tight tracking-tight">
-          Produtos mais pedidos
+          Dashboard de pedidos
         </h1>
         <p className="text-[15px] leading-normal text-[#52514E]">
-          Ranking dos produtos por quantidade, valor e número de pedidos.
+          Ranking dos produtos de 30 dias, por quantidade, valor e número de pedidos.
         </p>
       </div>
 

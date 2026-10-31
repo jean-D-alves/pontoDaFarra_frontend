@@ -1,3 +1,5 @@
+import type { PagedResult } from "./pagination";
+
 export type OrderItem = {
   productId: string;
   quantity: number;
@@ -41,3 +43,6 @@ export type OrderMetrics = {
 export type OrderMetricsResponse = OrderMetrics;
 
 export type OrdersResponse = Order[];
+
+/** Resposta paginada de `GET /orders/admin`. */
+export type OrderListResponse = PagedResult<Order>;

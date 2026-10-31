@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { requestMoreOrder } from "@/src/Handle/Order";
-import type { OrderMetricsResponse } from "@/src/types/order";
+import type { MoreOrderResponse } from "@/src/types/Products";
 import MostOrderedProducts from "./MostOrderedProducts";
 
 export default function MostOrder() {
-  const [metrics, setMetrics] = useState<OrderMetricsResponse | null>(null);
+  const [metrics, setMetrics] = useState<MoreOrderResponse | null>(null);
 
   useEffect(() => {
     requestMoreOrder().then(setMetrics).catch(console.error);

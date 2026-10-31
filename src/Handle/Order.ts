@@ -1,5 +1,5 @@
 import type { OrderItem, OrderPayload } from "@/src/types/cart";
-import type { OrdersResponse } from "../types/order";
+import type { OrderListResponse, OrdersResponse } from "../types/order";
 import { MoreOrderResponse } from "../types/Products";
 import type { OrderMetricsResponse } from "@/src/types/order";
 
@@ -66,6 +66,28 @@ export async function requestMoreOrder(): Promise<MoreOrderResponse> {
   }
 
   return (await response.json()) as MoreOrderResponse;
+}
+
+export async function requestOrderAdmin(
+  page = 1,
+  pageSize = 5,
+): Promise<OrderListResponse> {
+  const query = new URLSearchParams({
+    page: String(page),
+    pageSize: String(pageSize),
+  });
+
+  const response = await fetch(`/api/order/admin?${query}`, {
+    method: "GET",
+    credentials: "include",
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw new Error(`Falha ao buscar os pedidos (${response.status}).`);
+  }
+
+  return (await response.json()) as OrderListResponse;
 }
 
 export async function requestOrderDelete(id: string): Promise<void> {
