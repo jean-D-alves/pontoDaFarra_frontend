@@ -1,7 +1,20 @@
 import { Product } from "../types/Products";
+const productCache = new Map<string, Promise<Product>>();
 
+export function requestProductGetIdCached(id: string): Promise<Product> {
+  const cached = productCache.get(id);
+  if (cached) return cached;
+
+  const promise = requestProductGetId(id).catch((error) => {
+    productCache.delete(id);
+    throw error;
+  });
+
+  productCache.set(id, promise);
+  return promise;
+}
 export async function requestProductGetId(id: string): Promise<Product> {
-  const response = await fetch(`/api/produtos/${encodeURIComponent(id)}`, {
+  const response = await fetch(`/api/products/${encodeURIComponent(id)}`, {
     method: "GET",
     credentials: "include",
     cache: "no-store",

@@ -6,8 +6,8 @@ type BannerProps = {
 };
 
 const variants = {
-  first: "w-full bg-brand-gradient text-ink py-10",
-  second: "w-full md:w-1/3 bg-black-gradient text-brand py-8",
+  first: "w-full bg-brand-gradient text-ink py-10 md:py-10",
+  second: "hidden w-full md:w-1/3 md:block bg-black-gradient text-brand py-8",
 } as const;
 
 export default function Banner({
@@ -15,7 +15,7 @@ export default function Banner({
   onClick,
   type = "first",
 }: BannerProps) {
-  const className = `${variants[type]} flex items-center justify-center rounded-2xl px-4`;
+  const className = `px-20 py-30 ${variants[type]} flex items-center justify-center rounded-2xl `;
   const title = (
     <h2 className="font-display text-3xl tracking-wide">{children}</h2>
   );

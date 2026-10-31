@@ -13,5 +13,16 @@ export type Order = {
   createdAt: string;
   items: OrderItem[];
 };
+export type ProductOrderCount = {
+  productId: string;
+  productName: string;
+  orderCount: number;
+};
+
+export type OrderMetrics = {
+  byOrderCount: ProductOrderCount[];
+};
+
+export type OrderMetricsResponse = OrderMetrics;
 
 export type OrdersResponse = Order[];

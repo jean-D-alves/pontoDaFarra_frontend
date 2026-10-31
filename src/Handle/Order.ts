@@ -1,5 +1,6 @@
 import type { OrderItem, OrderPayload } from "@/src/types/cart";
 import type { OrdersResponse } from "../types/order";
+import { MoreOrderResponse } from "../types/Products";
 
 export async function requestOrder(
   order: Pick<OrderPayload, "totalValue" | "items">,
@@ -34,6 +35,20 @@ export async function requestOrderMe(): Promise<OrdersResponse> {
   }
 
   return (await response.json()) as OrdersResponse;
+}
+
+export async function requestMoreOrder(): Promise<MoreOrderResponse> {
+  const response = await fetch("/api/order/more-order", {
+    method: "GET",
+    credentials: "include",
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw new Error(`Falha ao buscar os pedidos (${response.status}).`);
+  }
+
+  return (await response.json()) as MoreOrderResponse;
 }
 
 export async function requestOrderDelete(id: string): Promise<void> {

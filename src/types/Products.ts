@@ -8,3 +8,13 @@ export type Product = {
   imageUrl: string | null;
   categoryId: string;
 };
+
+export type ProductOrderCount = {
+  productId: string;
+  productName: string;
+  orderCount: number;
+};
+
+export type MoreOrderResponse = {
+  byOrderCount: ProductOrderCount[];
+};
