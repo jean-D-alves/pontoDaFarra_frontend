@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 
 import AdminGuard from "@/src/components/Admin/AdminGuard";
 import Header from "@/src/components/header/Header";
+import AdminSidebar from "@/src/components/Admin/adminSidebar";
 
 export const metadata: Metadata = {
   title: "Ponto da Farra | Página Admin",
@@ -11,8 +12,11 @@ export const metadata: Metadata = {
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
-    <body>
-      <AdminGuard>{children}</AdminGuard>
-    </body>
+    <div className="flex flex-1 m-5 flex-col gap-2 md:flex-row">
+      <AdminGuard>
+        <AdminSidebar />
+        {children}
+      </AdminGuard>
+    </div>
   );
 }

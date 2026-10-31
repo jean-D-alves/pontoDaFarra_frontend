@@ -1,3 +1,5 @@
+import DashBoardSection from "@/src/components/Admin/DashboardSection";
+
 export const instant = false;
 
 export default function AdminPage() {
@@ -18,6 +20,7 @@ export default function AdminPage() {
             Ranking dos produtos por quantidade, valor e número de pedidos.
           </p>
         </header>
+        <DashBoardSection />
       </section>
     </main>
   );

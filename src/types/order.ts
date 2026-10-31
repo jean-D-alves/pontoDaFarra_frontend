@@ -13,13 +13,28 @@ export type Order = {
   createdAt: string;
   items: OrderItem[];
 };
+
 export type ProductOrderCount = {
   productId: string;
   productName: string;
   orderCount: number;
 };
 
+export type ProductQuantity = {
+  productId: string;
+  productName: string;
+  quantity: number;
+};
+
+export type ProductValue = {
+  productId: string;
+  productName: string;
+  totalValue: number;
+};
+
 export type OrderMetrics = {
+  byQuantity: ProductQuantity[];
+  byValue: ProductValue[];
   byOrderCount: ProductOrderCount[];
 };
 

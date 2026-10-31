@@ -1,6 +1,23 @@
 import type { OrderItem, OrderPayload } from "@/src/types/cart";
 import type { OrdersResponse } from "../types/order";
 import { MoreOrderResponse } from "../types/Products";
+import type { OrderMetricsResponse } from "@/src/types/order";
+
+export async function requestOrderChart(): Promise<OrderMetricsResponse> {
+  const response = await fetch("/api/order/admin/chart", {
+    method: "GET",
+    credentials: "include",
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Falha ao buscar as métricas de pedidos (${response.status}).`,
+    );
+  }
+
+  return (await response.json()) as OrderMetricsResponse;
+}
 
 export async function requestOrder(
   order: Pick<OrderPayload, "totalValue" | "items">,
