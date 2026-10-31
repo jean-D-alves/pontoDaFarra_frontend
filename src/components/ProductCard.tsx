@@ -49,7 +49,7 @@ export default function ProductCard({ product }: { product: Product }) {
         )}
       </Link>
 
-      <div className="flex flex-1 flex-col gap-1 p-3">
+      <div className="flex flex-1 flex-col gap-1 p-1">
         <h3 className="line-clamp-2 text-sm font-semibold text-black">
           <Link href={href} className={`rounded ${focusRing}`}>
             {product.name}
@@ -62,7 +62,7 @@ export default function ProductCard({ product }: { product: Product }) {
           </p>
         )}
 
-        <p className="mt-auto pt-2 text-lg font-bold text-black">
+        <p className="mt-auto pt-2 text-sm font-bold text-black md:text-xl">
           {currency.format(Number(product.value))}
         </p>
 
