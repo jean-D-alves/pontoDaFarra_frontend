@@ -62,10 +62,7 @@ export default function ProductContent() {
   useEffect(() => {
     if (!feedback) return;
 
-    const timer = window.setTimeout(
-      () => setFeedback(null),
-      FEEDBACK_DURATION,
-    );
+    const timer = window.setTimeout(() => setFeedback(null), FEEDBACK_DURATION);
 
     return () => window.clearTimeout(timer);
   }, [feedback]);
@@ -92,6 +89,9 @@ export default function ProductContent() {
       className="mx-auto w-full max-w-[1000px] px-4 py-6"
     >
       <header className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+        <h1 className="text-2xl font-bold">
+          <strong>Todos os produtos</strong>
+        </h1>
         {products && (
           <p className="text-sm text-muted">
             {products.totalItems} produto
@@ -108,11 +108,7 @@ export default function ProductContent() {
       <div aria-live="polite" role="status">
         {feedback && (
           <p className="mb-4 flex items-center gap-2 rounded-xl bg-available-bg px-3 py-2 text-sm font-medium text-available-text">
-            <CheckCircle2
-              aria-hidden="true"
-              size={16}
-              className="shrink-0"
-            />
+            <CheckCircle2 aria-hidden="true" size={16} className="shrink-0" />
             {feedback}
           </p>
         )}
@@ -147,10 +143,7 @@ export default function ProductContent() {
           <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             {products.items.map((product) => (
               <li key={product.productId}>
-                <ProductCardAdmin
-                  product={product}
-                  onChanged={handleChanged}
-                />
+                <ProductCardAdmin product={product} onChanged={handleChanged} />
               </li>
             ))}
           </ul>

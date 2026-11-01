@@ -55,7 +55,9 @@ async function sendProductRequest(
   }
 
   if (!response.ok) {
-    throw new Error(productActionError(response.status, fallback, conflictMessage));
+    throw new Error(
+      productActionError(response.status, fallback, conflictMessage),
+    );
   }
 
   return response;
@@ -185,6 +187,46 @@ export async function UpdateProduct(
   return response.json();
 }
 
+type CreateProductPayload = {
+  name: string;
+  description: string | null;
+  value: number;
+  categoryId: string;
+  isAvailable: boolean;
+  isPromotional: boolean;
+  image: File | null;
+};
+
+export async function CreateProduct(
+  payload: CreateProductPayload,
+): Promise<Product> {
+  const formData = new FormData();
+
+  formData.append("Name", payload.name);
+  if (payload.description) {
+    formData.append("Description", payload.description);
+  }
+  formData.append("Value", String(payload.value));
+  formData.append("CategoryId", payload.categoryId);
+  formData.append("IsAvailable", String(payload.isAvailable));
+  formData.append("IsPromotional", String(payload.isPromotional));
+
+  if (payload.image) {
+    formData.append("Image", payload.image);
+  }
+
+  const response = await sendProductRequest(
+    `/api/products`,
+    {
+      method: "POST",
+      body: formData,
+    },
+    "Dados inválidos. Verifique nome, descrição, valor, categoria e imagem.",
+    "Não foi possível criar o produto: verifique a categoria informada.",
+  );
+
+  return response.json();
+}
 export async function UpdateProductPromotion(
   id: string,
   payload: UpdateProductPromotionPayload,
