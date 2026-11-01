@@ -10,6 +10,18 @@ export async function RequestAll(): Promise<Category[] | null> {
   return response.json();
 }
 
+export async function requestCategoryGetId(
+  id: string,
+): Promise<Category | null> {
+  const response = await fetch(`/api/category/${encodeURIComponent(id)}`, {
+    credentials: "include",
+    cache: "no-store",
+  });
+
+  if (!response.ok) return null;
+  return response.json();
+}
+
 export async function RequestName(
   name: string,
   page = 1,

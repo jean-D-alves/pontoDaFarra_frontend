@@ -9,6 +9,29 @@ export type Product = {
   categoryId: string;
 };
 
+export type PagedResult<T> = {
+  items: T[];
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
+};
+
+export type UpdateProductPayload = {
+  name: string;
+  description: string;
+  value: number;
+  categoryId: string;
+  image?: File;
+};
+
+export type UpdateProductPromotionPayload = {
+  promotionalValue: number;
+  isPromotional: boolean;
+};
+
 export type ProductOrderCount = {
   productId: string;
   productName: string;

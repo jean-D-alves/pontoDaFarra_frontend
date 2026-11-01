@@ -19,6 +19,7 @@ export default function MostOrderedProductsAdmin({
   const [products, setProducts] = useState<ProductWithCount[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [reloadToken, setReloadToken] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -65,7 +66,7 @@ export default function MostOrderedProductsAdmin({
     return () => {
       cancelled = true;
     };
-  }, [items]);
+  }, [items, reloadToken]);
 
   if (loading) {
     return <p className="text-sm text-muted">Carregando produtos...</p>;
@@ -86,7 +87,10 @@ export default function MostOrderedProductsAdmin({
           key={`${product.productId}-${index}`}
           className="flex flex-col gap-1"
         >
-          <ProductCardAdmin product={product} />
+          <ProductCardAdmin
+            product={product}
+            onChanged={() => setReloadToken((current) => current + 1)}
+          />
           <span className="text-center text-xs text-muted">
             {orderCount} {orderCount === 1 ? "pedido" : "pedidos"}
           </span>
