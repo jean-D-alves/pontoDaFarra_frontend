@@ -20,7 +20,7 @@ export default function ProductCard({ product }: { product: Product }) {
       <Link
         href={href}
         aria-label={`Ver detalhes de ${product.name}`}
-        className={`relative block aspect-square bg-surface ${focusRing}`}
+        className={`relative block aspect-square w-full shrink-0 overflow-hidden bg-surface ${focusRing}`}
       >
         {product.isPromotional && (
           <span className="absolute left-2 top-2 z-10 rounded-full bg-brand px-2 py-1 text-xs font-bold text-black">
@@ -40,7 +40,7 @@ export default function ProductCard({ product }: { product: Product }) {
             src={imageUrl}
             alt={product.name}
             loading="lazy"
-            className="h-full w-full object-contain"
+            className="absolute inset-0 h-full w-full object-contain p-2"
           />
         ) : (
           <span className="flex h-full items-center justify-center text-sm text-muted">
