@@ -16,7 +16,7 @@ export default function ProductCard({ product }: { product: Product }) {
   const href = `/produtos/${product.productId}`;
 
   return (
-    <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-white">
+    <article className="flex h-full flex-col overflow-hidden rounded-2xl max-w-2xs border border-line bg-white">
       <Link
         href={href}
         aria-label={`Ver detalhes de ${product.name}`}

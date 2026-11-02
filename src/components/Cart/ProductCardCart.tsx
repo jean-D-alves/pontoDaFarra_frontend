@@ -43,7 +43,6 @@ export default function ProductCardCart({ data }: ProductCardCartProps) {
 
   return (
     <article className="flex gap-4 rounded-2xl border border-line bg-white p-4">
-      {/* Imagem */}
       <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-xl bg-gray-100">
         {image ? (
           <Image
@@ -60,8 +59,7 @@ export default function ProductCardCart({ data }: ProductCardCartProps) {
         )}
       </div>
 
-      {/* Informações */}
-      <div className="flex flex-1 flex-col justify-between">
+      <div className="flex flex-1 flex-col items-center justify-between md:flex-row">
         <div>
           <h2 className="text-lg font-semibold text-gray-900">{data.name}</h2>
 
@@ -70,8 +68,7 @@ export default function ProductCardCart({ data }: ProductCardCartProps) {
           </p>
         </div>
 
-        <div className="flex items-center justify-between">
-          {/* Quantidade */}
+        <div className="flex items-center justify-between flex-col gap-2 md:flex-row">
           <div className="flex items-center gap-2">
             <button
               type="button"

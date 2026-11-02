@@ -23,7 +23,7 @@ export default function CartPage() {
   return (
     <>
 
-      <main className="mx-auto flex w-full max-w-[1000px] gap-6 px-4 py-6">
+      <main className="mx-auto flex flex-col-reverse w-full max-w-[1000px] gap-6 px-4 py-6 md:flex-row">
         <div className="flex flex-1 flex-col gap-4">
           {products.length === 0 ? (
             <div className="rounded-2xl border border-line bg-white p-8 text-center">

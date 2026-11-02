@@ -20,7 +20,7 @@ export default function OrderItemRow({ item, product }: OrderItemRowProps) {
   const subtotal = getOrderItemSubtotal(item);
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex flex-col items-center gap-3 md:flex-row">
       <div className="relative size-14 shrink-0 overflow-hidden rounded-lg bg-surface">
         {imageUrl ? (
           <Image
