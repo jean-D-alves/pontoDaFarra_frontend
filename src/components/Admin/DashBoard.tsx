@@ -4,7 +4,6 @@ import {
   Bar,
   BarChart,
   Cell,
-  Legend,
   Pie,
   PieChart,
   ResponsiveContainer,
@@ -57,8 +56,7 @@ function DonutChart({ data, unit }: { data: Datum[]; unit: string }) {
               <Cell key={index} fill={colorAt(index)} />
             ))}
           </Pie>
-          <Tooltip formatter={(value) => [`${value} ${unit}`, ""]} />
-          <Legend verticalAlign="bottom" iconType="square" />
+          <Tooltip formatter={(value, name) => [`${value} ${unit}`, name]} />
         </PieChart>
       </ResponsiveContainer>
 
@@ -76,7 +74,7 @@ function ValueBarChart({ data }: { data: Datum[] }) {
     <div className="h-72 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 8, left: 8, right: 16 }}>
-          <XAxis dataKey="name" tick={{ fontSize: 12 }} interval={0} />
+          <XAxis dataKey="name" tick={false} />
           <YAxis
             width={80}
             tickFormatter={(v) => currency.format(Number(v))}
@@ -118,12 +116,11 @@ function OrdersPieChart({ data }: { data: Datum[] }) {
             ))}
           </Pie>
           <Tooltip
-            formatter={(value) => [
+            formatter={(value, name) => [
               `${value} ${Number(value) === 1 ? "pedido" : "pedidos"}`,
-              "",
+              name,
             ]}
           />
-          <Legend verticalAlign="bottom" iconType="square" />
         </PieChart>
       </ResponsiveContainer>
     </div>
