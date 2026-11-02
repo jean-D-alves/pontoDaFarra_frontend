@@ -4,6 +4,7 @@ import {
   UpdateProductPayload,
   UpdateProductPromotionPayload,
 } from "@/src/types/Products";
+import { DESKTOP_PAGE_SIZE } from "@/lib/pageSize";
 
 const productCache = new Map<string, Promise<Product>>();
 
@@ -141,7 +142,7 @@ export async function requestProductSearch(
   const qs = new URLSearchParams();
   qs.set("name", params.name);
   qs.set("page", String(params.page ?? 1));
-  qs.set("pageSize", String(params.pageSize ?? 12));
+  qs.set("pageSize", String(params.pageSize ?? DESKTOP_PAGE_SIZE));
   if (params.includeUnavailable) qs.set("includeUnavailable", "true");
   if (params.onlyPromos) qs.set("onlyPromos", "true");
   if (params.below !== undefined) qs.set("below", String(params.below));

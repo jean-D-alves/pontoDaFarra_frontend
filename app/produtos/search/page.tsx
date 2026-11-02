@@ -12,6 +12,7 @@ import {
   SearchProductsResult,
 } from "@/src/Handle/Product";
 import { SEARCH_PATH } from "@/src/components/header/SearchInput";
+import { usePageSize } from "@/src/hooks/usePageSize";
 
 type Status = "loading" | "ready" | "error";
 
@@ -32,6 +33,7 @@ function buildSearchUrl(
 function SearchResults() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pageSize = usePageSize();
 
   const name = (searchParams.get("name") ?? "").trim();
   const page = Math.max(1, Number(searchParams.get("page")) || 1);
@@ -51,11 +53,30 @@ function SearchResults() {
     if (!name) return;
 
     let cancelled = false;
-    setStatus("loading");
 
-    requestProductSearch({ name, page, includeUnavailable, onlyPromos, below })
+    requestProductSearch({
+      name,
+      page,
+      pageSize,
+      includeUnavailable,
+      onlyPromos,
+      below,
+    })
       .then((data) => {
         if (cancelled) return;
+
+        // Página fora do intervalo (ex.: mudou o tamanho da página): vai para a última válida.
+        if (data.totalPages > 0 && page > data.totalPages) {
+          router.replace(
+            buildSearchUrl(name, data.totalPages, {
+              includeUnavailable,
+              onlyPromos,
+              below,
+            }),
+          );
+          return;
+        }
+
         setResult(data);
         setStatus("ready");
       })
@@ -66,15 +87,34 @@ function SearchResults() {
     return () => {
       cancelled = true;
     };
-  }, [name, page, includeUnavailable, onlyPromos, below]);
+  }, [
+    name,
+    page,
+    pageSize,
+    includeUnavailable,
+    onlyPromos,
+    below,
+    router,
+  ]);
 
   const goToPage = (next: number) => {
+    if (next === page) return;
+
+    setStatus("loading");
     router.push(buildSearchUrl(name, next, filters));
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // Mudou o filtro: volta para a página 1
   const applyFilters = (next: SearchFiltersValue) => {
+    const unchanged =
+      next.includeUnavailable === includeUnavailable &&
+      next.onlyPromos === onlyPromos &&
+      next.below === below;
+
+    if (unchanged) return;
+
+    setStatus("loading");
     router.push(buildSearchUrl(name, 1, next));
   };
 

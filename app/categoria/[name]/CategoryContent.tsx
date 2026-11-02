@@ -8,14 +8,15 @@ import EmptyState from "@/src/components/EmptyState";
 import Loading from "@/src/components/Loading";
 import ProductCard from "@/src/components/ProductCard";
 import Pagination from "@/src/components/Pagination";
-
-const PAGE_SIZE = 10;
+import { usePageSize } from "@/src/hooks/usePageSize";
 
 export default function CategoryContent({ name }: { name: string }) {
+  const pageSize = usePageSize();
   const [page, setPage] = useState(1);
   const [data, setData] = useState<CategoryWithProducts | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
     let cancelled = false;
 
@@ -23,13 +24,21 @@ export default function CategoryContent({ name }: { name: string }) {
       setLoading(true);
       setError(null);
 
-      const result = await RequestName(name, page, PAGE_SIZE);
+      const result = await RequestName(name, page, pageSize);
 
       if (cancelled) return;
 
       if (!result) {
         setError("Não foi possível carregar os produtos.");
         setData(null);
+      } else if (
+        result.products.items.length === 0 &&
+        page > 1 &&
+        result.products.totalPages < page
+      ) {
+        // Página fora do intervalo (ex.: mudou o tamanho da página): vai para a última válida.
+        setPage(Math.max(1, result.products.totalPages));
+        return;
       } else {
         setData(result);
       }
@@ -41,7 +50,7 @@ export default function CategoryContent({ name }: { name: string }) {
     return () => {
       cancelled = true;
     };
-  }, [name, page]);
+  }, [name, page, pageSize]);
 
 
   const products = data?.products;

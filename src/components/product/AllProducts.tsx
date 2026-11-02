@@ -7,12 +7,13 @@ import EmptyState from "@/src/components/EmptyState";
 import Loading from "@/src/components/Loading";
 import Pagination from "@/src/components/Pagination";
 import { PagedResult, Product } from "@/src/types/Products";
+import { usePageSize } from "@/src/hooks/usePageSize";
 import ProductCardAdmin from "../ProductCardAdmin";
 
-const PAGE_SIZE = 10;
 const FEEDBACK_DURATION = 4000;
 
 export default function ProductContent() {
+  const pageSize = usePageSize();
   const [page, setPage] = useState(1);
   const [products, setProducts] = useState<PagedResult<Product> | null>(null);
   const [loading, setLoading] = useState(true);
@@ -25,7 +26,7 @@ export default function ProductContent() {
     let cancelled = false;
     let redirecting = false;
 
-    RequestAll(page, PAGE_SIZE)
+    RequestAll(page, pageSize)
       .then((result) => {
         if (cancelled) return;
 
@@ -36,9 +37,14 @@ export default function ProductContent() {
         }
 
         if (result.items.length === 0 && page > 1) {
-          redirecting = true;
-          setPage((current) => Math.max(1, current - 1));
-          return;
+          const lastPage = Math.max(1, result.totalPages);
+
+          // Página fora do intervalo (ex.: mudou o tamanho da página): vai para a última válida.
+          if (lastPage !== page) {
+            redirecting = true;
+            setPage(lastPage);
+            return;
+          }
         }
 
         hasLoadedRef.current = true;
@@ -57,7 +63,7 @@ export default function ProductContent() {
     return () => {
       cancelled = true;
     };
-  }, [page, reloadToken]);
+  }, [page, pageSize, reloadToken]);
 
   useEffect(() => {
     if (!feedback) return;
