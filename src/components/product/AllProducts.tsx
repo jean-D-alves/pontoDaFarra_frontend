@@ -2,11 +2,17 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BeerOff, CheckCircle2, TriangleAlert } from "lucide-react";
-import { RequestAll } from "@/src/Handle/Product";
+import { RequestAll, type ProductFilters } from "@/src/Handle/Product";
+import { RequestAll as RequestAllCategories } from "@/src/Handle/Category";
 import EmptyState from "@/src/components/EmptyState";
 import Loading from "@/src/components/Loading";
 import Pagination from "@/src/components/Pagination";
+import ProductFilterBar, {
+  type AvailabilityFilter,
+  type PromotionFilter,
+} from "@/src/components/product/ProductFilterBar";
 import { PagedResult, Product } from "@/src/types/Products";
+import { Category } from "@/src/types/category";
 import { usePageSize } from "@/src/hooks/usePageSize";
 import ProductCardAdmin from "../ProductCardAdmin";
 
@@ -22,11 +28,58 @@ export default function ProductContent() {
   const [feedback, setFeedback] = useState<string | null>(null);
   const hasLoadedRef = useRef(false);
 
+  const [availability, setAvailability] = useState<AvailabilityFilter>("all");
+  const [promotion, setPromotion] = useState<PromotionFilter>("all");
+  const [categoryId, setCategoryId] = useState("");
+
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+  const [categoryError, setCategoryError] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    RequestAllCategories()
+      .then((result) => {
+        if (cancelled) return;
+
+        if (!result) {
+          setCategoryError(true);
+          return;
+        }
+
+        setCategoryError(false);
+        setCategories(result);
+      })
+      .catch(() => {
+        if (!cancelled) setCategoryError(true);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingCategories(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
     let redirecting = false;
 
-    RequestAll(page, pageSize)
+    const filters: ProductFilters = {};
+
+    if (availability !== "all") {
+      filters.isAvailable = availability === "available";
+    }
+
+    if (promotion !== "all") {
+      filters.isPromotional = promotion === "promotional";
+    }
+
+    if (categoryId) filters.categoryId = categoryId;
+
+    RequestAll(page, pageSize, filters)
       .then((result) => {
         if (cancelled) return;
 
@@ -48,6 +101,7 @@ export default function ProductContent() {
         }
 
         hasLoadedRef.current = true;
+        setError(null);
         setProducts(result);
       })
       .catch(() => {
@@ -63,7 +117,7 @@ export default function ProductContent() {
     return () => {
       cancelled = true;
     };
-  }, [page, pageSize, reloadToken]);
+  }, [page, pageSize, reloadToken, availability, promotion, categoryId]);
 
   useEffect(() => {
     if (!feedback) return;
@@ -72,6 +126,9 @@ export default function ProductContent() {
 
     return () => window.clearTimeout(timer);
   }, [feedback]);
+
+  const hasActiveFilters =
+    availability !== "all" || promotion !== "all" || categoryId !== "";
 
   const handleChanged = useCallback((message?: string) => {
     if (message) setFeedback(message);
@@ -87,6 +144,43 @@ export default function ProductContent() {
     setError(null);
     setLoading(true);
     setPage(nextPage);
+  }
+
+  function resetToFirstPage() {
+    setFeedback(null);
+    setError(null);
+    setLoading(true);
+    setPage(1);
+  }
+
+  function handleAvailabilityChange(value: AvailabilityFilter) {
+    if (value === availability) return;
+
+    setAvailability(value);
+    resetToFirstPage();
+  }
+
+  function handlePromotionChange(value: PromotionFilter) {
+    if (value === promotion) return;
+
+    setPromotion(value);
+    resetToFirstPage();
+  }
+
+  function handleCategoryChange(value: string) {
+    if (value === categoryId) return;
+
+    setCategoryId(value);
+    resetToFirstPage();
+  }
+
+  function handleClearFilters() {
+    if (!hasActiveFilters) return;
+
+    setAvailability("all");
+    setPromotion("all");
+    setCategoryId("");
+    resetToFirstPage();
   }
 
   return (
@@ -110,6 +204,20 @@ export default function ProductContent() {
           <p className="text-xs text-muted">Atualizando produtos…</p>
         )}
       </header>
+
+      <ProductFilterBar
+        availability={availability}
+        promotion={promotion}
+        categoryId={categoryId}
+        categories={categories}
+        loadingCategories={loadingCategories}
+        categoryError={categoryError}
+        hasActiveFilters={hasActiveFilters}
+        onChangeAvailability={handleAvailabilityChange}
+        onChangePromotion={handlePromotionChange}
+        onChangeCategory={handleCategoryChange}
+        onClear={handleClearFilters}
+      />
 
       <div aria-live="polite" role="status">
         {feedback && (
@@ -162,11 +270,33 @@ export default function ProductContent() {
       )}
 
       {!loading && products && products.items.length === 0 && (
-        <EmptyState
-          icon={BeerOff}
-          title="Nenhum produto por aqui"
-          description="Não há produtos disponíveis nesta categoria no momento."
-        />
+        <>
+          <EmptyState
+            icon={BeerOff}
+            title={
+              hasActiveFilters
+                ? "Nenhum produto encontrado"
+                : "Nenhum produto por aqui"
+            }
+            description={
+              hasActiveFilters
+                ? "Nenhum produto corresponde aos filtros selecionados. Tente ajustar ou limpar os filtros."
+                : "Ainda não há produtos cadastrados no momento."
+            }
+          />
+
+          {hasActiveFilters && (
+            <div className="mt-4 flex justify-center">
+              <button
+                type="button"
+                onClick={handleClearFilters}
+                className="min-h-[44px] rounded-xl border border-line bg-white px-4 text-sm font-semibold text-body transition hover:bg-surface"
+              >
+                Limpar filtros
+              </button>
+            </div>
+          )}
+        </>
       )}
     </section>
   );

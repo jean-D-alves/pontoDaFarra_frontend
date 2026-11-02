@@ -86,14 +86,31 @@ export function requestProductGetIdCached(id: string): Promise<Product> {
   return promise;
 }
 
+export type ProductFilters = {
+  isAvailable?: boolean;
+  isPromotional?: boolean;
+  categoryId?: string;
+};
+
 export async function RequestAll(
   page: number,
   pageSize: number,
+  filters: ProductFilters = {},
 ): Promise<PagedResult<Product> | null> {
   const params = new URLSearchParams({
     page: String(page),
     pageSize: String(pageSize),
   });
+
+  if (filters.isAvailable !== undefined) {
+    params.set("isAvailable", String(filters.isAvailable));
+  }
+
+  if (filters.isPromotional !== undefined) {
+    params.set("isPromotional", String(filters.isPromotional));
+  }
+
+  if (filters.categoryId) params.set("categoryId", filters.categoryId);
 
   const response = await fetch(`/api/products/all?${params}`, {
     credentials: "include",

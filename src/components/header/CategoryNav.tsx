@@ -19,7 +19,7 @@ export default function CategoryNav({
   return (
     <nav aria-label="Categorias" className="w-full overflow-x">
       <ul className="flex items-center gap-6 whitespace-nowrap">
-        {categories.slice(0, 5).map((category) => {
+        {categories.slice(0, 2).map((category) => {
           const isActive =
             Boolean(current) && category.name?.toLowerCase() === current;
 
