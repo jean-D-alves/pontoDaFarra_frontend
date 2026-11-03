@@ -27,8 +27,8 @@ export default function CategoryNav({
             <li key={category.categoryId ?? category.name}>
               <Link
                 href={
-                  category.name
-                    ? `/categoria/${encodeURIComponent(category.name)}`
+                  category.categoryId
+                    ? `/produtos/all?categoryId=${category.categoryId}`
                     : "#"
                 }
                 aria-current={isActive ? "page" : undefined}

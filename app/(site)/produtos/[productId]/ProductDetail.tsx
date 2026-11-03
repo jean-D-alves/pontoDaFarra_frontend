@@ -37,6 +37,7 @@ export default async function ProductDetail({
       <ProductBreadcrumb
         productId={product.productId}
         productName={product.name}
+        categoryId={category?.categoryId ?? product.categoryId}
         categoryName={categoryName}
       />
 
@@ -49,6 +50,7 @@ export default async function ProductDetail({
 
         <div className="flex flex-col gap-6">
           <ProductBadges
+            categoryId={category?.categoryId ?? product.categoryId}
             categoryName={categoryName}
             isAvailable={product.isAvailable}
           />

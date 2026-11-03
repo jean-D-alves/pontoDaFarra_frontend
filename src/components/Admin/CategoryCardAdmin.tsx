@@ -92,7 +92,7 @@ export default function CategoryCardAdmin({
   return (
     <li className="relative">
       <Link
-        href={`/categoria/${encodeURIComponent(category.name)}`}
+        href={`/produtos/all?categoryId=${category.categoryId}`}
         aria-label={`Ver produtos da categoria ${category.name}`}
         className={`group flex h-full flex-col items-center justify-center gap-3 rounded-2xl border border-line bg-white px-4 py-8 text-center transition hover:border-brand hover:shadow-sm ${focusRing}`}
       >

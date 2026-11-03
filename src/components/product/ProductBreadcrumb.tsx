@@ -4,6 +4,7 @@ import { ChevronRight } from "lucide-react";
 interface ProductBreadcrumbProps {
   productId: string;
   productName: string;
+  categoryId: string | null;
   categoryName: string | null;
 }
 
@@ -13,8 +14,13 @@ const crumbLink =
 export default function ProductBreadcrumb({
   productId,
   productName,
+  categoryId,
   categoryName,
 }: ProductBreadcrumbProps) {
+  const categoryHref = categoryId
+    ? `/produtos/all?categoryId=${encodeURIComponent(categoryId)}`
+    : "/produtos/all";
+
   return (
     <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
       <nav aria-label="Navegação estrutural">
@@ -29,11 +35,7 @@ export default function ProductBreadcrumb({
           </li>
           <li>
             <Link
-              href={
-                categoryName
-                  ? `/categoria/${encodeURIComponent(categoryName)}`
-                  : "/categoria"
-              }
+              href={categoryHref}
               className={`${crumbLink} capitalize`}
             >
               {categoryName ?? "Categoria"}

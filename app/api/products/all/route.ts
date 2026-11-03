@@ -13,9 +13,12 @@ export async function GET(request: NextRequest) {
   const headers = buildBackendHeaders(request);
   const { searchParams } = new URL(request.url);
 
+  const page = searchParams.get("page")?.trim();
+  const pageSize = searchParams.get("pageSize")?.trim();
+
   const params = new URLSearchParams({
-    page: searchParams.get("page") ?? "1",
-    pageSize: searchParams.get("pageSize") ?? "10",
+    page: page || "1",
+    pageSize: pageSize || "10",
   });
 
   // Só repassa os filtros quando vierem preenchidos, para não filtrar sem querer.
@@ -29,7 +32,7 @@ export async function GET(request: NextRequest) {
     params.set("isPromotional", isPromotional);
   }
 
-  const categoryId = searchParams.get("categoryId");
+  const categoryId = searchParams.get("categoryId")?.trim();
   if (categoryId) params.set("categoryId", categoryId);
 
   try {

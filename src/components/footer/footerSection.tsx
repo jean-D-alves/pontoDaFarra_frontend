@@ -9,6 +9,10 @@ export default function FooterSection() {
 
   const Routes = [
     {
+      name: "Todos os produtos",
+      rota: "/produtos/all",
+    },
+    {
       name: "Categorias",
       rota: "/categorias",
     },
@@ -35,20 +39,23 @@ export default function FooterSection() {
   ];
 
   return (
-    <footer className="flex-row bottom-0 flex flex-1 w-full gap-16 bg-ink h-80 p-10">
+    <footer className="mt-auto flex w-full flex-col gap-8 bg-ink min-h-80 p-10 md:flex-row md:gap-16">
       <div className="flex flex-col gap-2.5 justify-start">
         <h1 className={`font-display text-2xl tracking-wide text-text`}>
           PONTO DA FARRA
         </h1>
+        <div className="flex flex-row gap-2.5">
         {PerfilLinks.map((link) => (
           <Link className="text-text" href={link.rota} key={link.name}>
             {link.icon}
           </Link>
         ))}
+        </div>
+
       </div>
-      <div className="border border-footer-line" />
-      <div className="flex flex-1 flex-col gap-2 p-4">
-        <h1 className="text-text text-2xl">Rotas</h1>
+      <div className="h-px w-full shrink-0 bg-footer-line md:h-auto md:w-px" />
+      <div className="flex w-full flex-col gap-2 p-4 md:flex-1">
+        <h1 className="text-text text-2xl font-display">Rotas</h1>
         {Routes.map((route) => (
           <Link
             className="text-footer-muted"
@@ -59,8 +66,8 @@ export default function FooterSection() {
           </Link>
         ))}
       </div>
-      <div className="flex flex-1 flex-col gap-2 p-4">
-        <h1 className="text-text text-2xl">Categorias</h1>
+      <div className="flex w-full flex-col gap-2 p-4 md:flex-1">
+        <h1 className="text-text text-2xl font-display">Categorias</h1>
 
         <Suspense fallback={null}>
           <FooterCategories />

@@ -5,6 +5,7 @@ import ProductCard from "@/src/components/ProductCard";
 import { requestProductGetIdCached } from "@/src/Handle/Product";
 import type { Product } from "@/src/types/Products";
 import type { ProductOrderCount } from "@/src/types/order";
+import MostOrderEmptyState from "./MostOrderEmptyState";
 
 type ProductWithCount = {
   product: Product;
@@ -72,11 +73,13 @@ export default function MostOrderedProducts({
   }
 
   if (error) {
-    return <p className="text-sm text-red-600">{error}</p>;
+    return <MostOrderEmptyState message={error} />;
   }
 
   if (products.length === 0) {
-    return <p className="text-sm text-muted">Nenhum produto encontrado.</p>;
+    return (
+      <MostOrderEmptyState message="Nenhum dos produtos mais pedidos foi encontrado." />
+    );
   }
 
   return (

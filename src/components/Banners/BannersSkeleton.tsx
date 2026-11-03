@@ -5,7 +5,7 @@ import Banner from "./Banner";
 export default function BannersSkeleton() {
   const router = useRouter();
   return (
-    <div className="flex flex-1 flex-col gap-4 max-h-96 md:flex-row">
+    <div className="hidden flex-1 flex-col gap-4 max-h-96 md:flex-row md:flex">
       <Banner
         type="first"
         onClick={() => {

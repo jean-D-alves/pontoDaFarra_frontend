@@ -11,7 +11,7 @@ export default async function FooterCategories() {
       {categories.slice(0, 4).map((category) => (
         <Link
           className="text-footer-muted"
-          href={`/categoria/${category.name}`}
+          href={`/produtos/all?categoryId=${category.categoryId}`}
           key={category.name}
         >
           {category.name}
