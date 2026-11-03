@@ -5,6 +5,7 @@ import { requestMoreOrder } from "@/src/Handle/Order";
 import type { MoreOrderResponse } from "@/src/types/Products";
 import MostOrderEmptyState from "./MostOrderEmptyState";
 import MostOrderedProducts from "./MostOrderedProducts";
+import Link from "next/link";
 
 export default function MostOrder() {
   const [metrics, setMetrics] = useState<MoreOrderResponse | null>(null);
@@ -47,5 +48,15 @@ export default function MostOrder() {
     );
   }
 
-  return <MostOrderedProducts items={metrics.byOrderCount} />;
+  return (
+    <div className="flex flex-col gap-4">
+      <MostOrderedProducts items={metrics.byOrderCount} />
+      <Link
+        href={"/produtos/all"}
+        className="flex w-full rounded-xl justify-center items-center font-bold p-2 bg-brand-gradient"
+      >
+        ver todos os produtos
+      </Link>
+    </div>
+  );
 }

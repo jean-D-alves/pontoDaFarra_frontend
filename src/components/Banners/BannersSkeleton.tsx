@@ -14,7 +14,14 @@ export default function BannersSkeleton() {
       >
         Aproveite os mais pedidos
       </Banner>
-      <Banner type="second">Escolha um combo gelo</Banner>
+      <Banner
+        type="second"
+        onClick={() => {
+          router.push("/produtos/all?isPromotional=true");
+        }}
+      >
+        Escolha os produtos em ofertas
+      </Banner>
     </div>
   );
 }

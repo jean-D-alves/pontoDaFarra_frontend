@@ -18,7 +18,15 @@ export default function CategoryNav({
 
   return (
     <nav aria-label="Categorias" className="w-full overflow-x">
-      <ul className="flex items-center gap-6 whitespace-nowrap">
+      <ul className="flex flex-wrap items-center gap-6 whitespace-nowrap">
+        <li>
+          <Link
+            href="/produtos/all?isPromotional=true"
+            className="text-sm text-gray-500 hover:text-black"
+          >
+            Ofertas
+          </Link>
+        </li>
         {categories.slice(0, 2).map((category) => {
           const isActive =
             Boolean(current) && category.name?.toLowerCase() === current;
