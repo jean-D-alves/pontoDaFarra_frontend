@@ -1,4 +1,6 @@
 import { NextRequest } from "next/server";
+import { revalidateTag } from "next/cache";
+import { CATEGORIES_CACHE_TAG } from "@/lib/category";
 import {
   apiKey,
   backendUrl,
@@ -24,6 +26,8 @@ export async function POST(request: NextRequest) {
       body,
       cache: "no-store",
     });
+
+    if (backend.ok) revalidateTag(CATEGORIES_CACHE_TAG, "max");
 
     return await forwardBackendResponse(backend);
   } catch {

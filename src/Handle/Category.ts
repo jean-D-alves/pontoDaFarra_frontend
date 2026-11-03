@@ -49,13 +49,26 @@ async function sendCategoryRequest(
 }
 
 export async function RequestAll(): Promise<Category[] | null> {
-  const response = await fetch("/api/category/all", {
-    credentials: "include",
-    cache: "no-store",
-  });
+  const isServer = typeof window === "undefined";
+  const backendUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "");
 
-  if (!response.ok) return null;
-  return response.json();
+  // No servidor não existe URL relativa: fala direto com o backend.
+  if (isServer && !backendUrl) return null;
+
+  try {
+    const response = await fetch(
+      isServer ? `${backendUrl}/category/all` : "/api/category/all",
+      {
+        credentials: isServer ? undefined : "include",
+        cache: "no-store",
+      },
+    );
+
+    if (!response.ok) return null;
+    return response.json();
+  } catch {
+    return null;
+  }
 }
 
 export async function UpdateCategory(

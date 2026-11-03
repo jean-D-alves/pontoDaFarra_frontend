@@ -3,26 +3,8 @@ import { BeerOff, TriangleAlert } from "lucide-react";
 import Header from "@/src/components/header/Header";
 import EmptyState from "@/src/components/EmptyState";
 import Loading from "@/src/components/Loading";
-import { Category } from "@/src/types/category";
+import { getCategories } from "@/lib/category";
 import CategoriesGrid from "./CategoriesGrid";
-
-async function getCategories(): Promise<Category[] | null> {
-  const backendUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "");
-
-  if (!backendUrl) return null;
-
-  try {
-    const response = await fetch(`${backendUrl}/category/all`, {
-      cache: "no-store",
-    });
-
-    if (!response.ok) return null;
-
-    return (await response.json()) as Category[];
-  } catch {
-    return null;
-  }
-}
 
 async function CategoriesContent() {
   const categories = await getCategories();
