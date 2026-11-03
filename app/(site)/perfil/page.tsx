@@ -98,25 +98,25 @@ export default function Perfil() {
               <p>
                 <strong>{user?.phoneNumber}</strong>
               </p>
-              <p>
+              <p className="flex flex-col text-center p-2">
                 <strong>{user?.role}</strong>
                 {user?.role === "Admin" && (
                   <Link
                     href="/admin"
-                    className="text-sm text-text hidden md:block"
+                    className="text-sm text-text"
                   >
                     Pagina de Admin
                   </Link>
                 )}
               </p>
               <button
-                className="flex bg-brand-gradient text-ink px-20 py-2 items-center gap-2 rounded-2xl cursor-pointer"
+                className="flex bg-brand-gradient text-ink px-15 py-1 rounded-xl cursor-pointer md:py-2"
                 onClick={() => handleLogout()}
               >
                 <strong>sair da conta</strong>
               </button>
               <button
-                className="flex bg-red-600 text-text px-20 py-2 rounded-2xl cursor-pointer"
+                className="flex bg-red-600 text-text px-15 py-1 rounded-xl cursor-pointer md:py-2"
                 onClick={() => setConfirmDelete(true)}
               >
                 <strong>Apagar conta</strong>
