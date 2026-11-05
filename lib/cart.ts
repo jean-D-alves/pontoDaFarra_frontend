@@ -238,6 +238,20 @@ export type OrderCustomer = {
   phone?: string | null;
 };
 
+export type OrderLocation = {
+  name: string;
+  street: string;
+  houseNumber: string;
+  neighborhood: string;
+  city: string;
+  state: string;
+};
+
+export type OrderDetails = {
+  location?: OrderLocation | null;
+  note?: string | null;
+};
+
 function formatCustomerPhone(phone: string): string {
   const digits = phone.replace(/\D/g, "");
 
@@ -260,6 +274,26 @@ function formatOrderDate(date: Date): string {
   }).format(date);
 }
 
+function formatLocationLines(location?: OrderLocation | null): string[] {
+  if (!location) return ["Localização não definida"];
+
+  const streetLine = [location.street.trim(), location.houseNumber.trim()]
+    .filter((part) => part.length > 0)
+    .join(", ");
+  const city = [location.city.trim(), location.state.trim()]
+    .filter((part) => part.length > 0)
+    .join(" - ");
+  const cityLine = [location.neighborhood.trim(), city]
+    .filter((part) => part.length > 0)
+    .join(" · ");
+
+  const lines = [streetLine || null, cityLine || null].filter(
+    (line): line is string => line !== null,
+  );
+
+  return lines.length > 0 ? lines : ["Localização não definida"];
+}
+
 /**
  * Monta a mensagem do WhatsApp apenas com os caracteres de formatação que o
  * próprio WhatsApp interpreta: `*negrito*`, `_itálico_` e `~riscado~`.
@@ -269,6 +303,7 @@ export function formatOrderMessage(
   itemNames: Record<string, string>,
   customer?: OrderCustomer,
   date: Date = new Date(),
+  details: OrderDetails = {},
 ): string {
   const itemBlocks = order.items.map((item: OrderItem) => {
     const name = itemNames[item.productId] || "Produto";
@@ -297,6 +332,24 @@ export function formatOrderMessage(
 
   if (customerLines.length > 0) {
     blocks.push(ORDER_MESSAGE_SEPARATOR, ...customerLines);
+  }
+
+  blocks.push(
+    ORDER_MESSAGE_SEPARATOR,
+    "*LOCALIZAÇÃO*",
+    ORDER_MESSAGE_SEPARATOR,
+    ...formatLocationLines(details.location),
+  );
+
+  const note = details.note?.trim();
+
+  if (note) {
+    blocks.push(
+      ORDER_MESSAGE_SEPARATOR,
+      "*OBSERVAÇÃO*",
+      ORDER_MESSAGE_SEPARATOR,
+      note,
+    );
   }
 
   blocks.push(

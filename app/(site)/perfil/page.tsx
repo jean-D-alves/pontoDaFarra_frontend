@@ -4,12 +4,20 @@ import Header from "@/src/components/header/Header";
 import Loading from "@/src/components/Loading";
 import ModelUpdate from "@/src/components/ModelUpdate";
 import OrderHistory from "@/src/components/profile/OrderHistory";
+import LocationList from "@/src/components/profile/LocationList";
 import { useUser } from "@/src/Context/UserContext";
 import { requestDeleteUser } from "@/src/Handle/User";
 import { PencilIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type KeyboardEvent } from "react";
+
+type ProfileTab = "orders" | "locations";
+
+const PROFILE_TABS: { id: ProfileTab; label: string }[] = [
+  { id: "orders", label: "Meus pedidos" },
+  { id: "locations", label: "Meus endereços" },
+];
 
 export default function Perfil() {
   const router = useRouter();
@@ -26,6 +34,30 @@ export default function Perfil() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [model, setModel] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<ProfileTab>("orders");
+
+  function handleTabKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    const tabs = PROFILE_TABS.map((tab) => tab.id);
+    const currentIndex = tabs.indexOf(activeTab);
+    let nextIndex: number | null = null;
+
+    if (event.key === "ArrowRight") {
+      nextIndex = (currentIndex + 1) % tabs.length;
+    } else if (event.key === "ArrowLeft") {
+      nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+    } else if (event.key === "Home") {
+      nextIndex = 0;
+    } else if (event.key === "End") {
+      nextIndex = tabs.length - 1;
+    }
+
+    if (nextIndex === null) return;
+
+    event.preventDefault();
+    const nextTab = tabs[nextIndex];
+    setActiveTab(nextTab);
+    document.getElementById(`profile-tab-${nextTab}`)?.focus();
+  }
 
   function GetInitial(name: string | undefined): string | null {
     if (!name) {
@@ -74,7 +106,7 @@ export default function Perfil() {
     <>
 
       <main className="flex flex-1 flex-col w-full h-full bg-line-strong p-4 gap-4 lg:flex-row">
-        <section className="flex flex-col w-full justify-center items-center bg-ink text-text rounded-2xl p-12 lg:w-[390px] lg:shrink-0">
+        <section className="flex flex-col w-full justify-center items-center bg-ink text-text rounded-2xl p-8 lg:w-[390px] lg:shrink-0">
           {loading ? (
             <Loading />
           ) : (
@@ -144,8 +176,57 @@ export default function Perfil() {
             />
           )}
         </section>
-        <section className="flex flex-col w-full min-w-0 justify-start items-center bg-background text-text rounded-2xl py-10 px-12 lg:flex-1">
-          <OrderHistory />
+        <section className="flex flex-col w-full min-w-0 justify-start items-center bg-background text-text rounded-2xl py-10 px-8 lg:flex-1">
+          <div
+            role="tablist"
+            aria-label="Seções do perfil"
+            onKeyDown={handleTabKeyDown}
+            className="flex w-full rounded-xl border gap-1 border-[#E7E5DF] bg-surface p-1"
+          >
+            {PROFILE_TABS.map((tab) => {
+              const selected = activeTab === tab.id;
+
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  role="tab"
+                  id={`profile-tab-${tab.id}`}
+                  aria-selected={selected}
+                  aria-controls={`profile-panel-${tab.id}`}
+                  tabIndex={selected ? 0 : -1}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`min-h-[44px] flex-1 rounded-lg px-4 text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black ${
+                    selected
+                      ? "bg-white text-stone-strong shadow-sm"
+                      : "text-stone hover:text-stone-strong"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+
+          <div
+            role="tabpanel"
+            id="profile-panel-orders"
+            aria-labelledby="profile-tab-orders"
+            hidden={activeTab !== "orders"}
+            className="mt-6 w-full"
+          >
+            <OrderHistory />
+          </div>
+
+          <div
+            role="tabpanel"
+            id="profile-panel-locations"
+            aria-labelledby="profile-tab-locations"
+            hidden={activeTab !== "locations"}
+            className="mt-6 w-full"
+          >
+            <LocationList />
+          </div>
         </section>
       </main>
     </>
