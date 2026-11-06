@@ -18,8 +18,27 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL!,
+  ),
   title: "Ponto da Farra | Distribuidora de bebidas",
-  description: "Distribuidora de bebidas em Acari, RN",
+  description: "Distribuidora de bebidas em Acari - RN",
+  openGraph: {
+    title: "Ponto da Farra",
+    description: "Distribuidora de bebidas em Acari - RN",
+    url: "/",
+    siteName: "Ponto da Farra",
+    locale: "pt_BR",
+    type: "website",
+    images: [
+      {
+        url: "/pontodafarra-logo.png",
+        width: 1200,
+        height: 630,
+        alt: "Logo",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -29,9 +48,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${bebasNeue.variable} ${poppins.variable} h-full antialiased`}
     >
       <body className="flex min-h-screen flex-col">
-        <UserProvider>
-          {children}
-        </UserProvider>
+        <UserProvider>{children}</UserProvider>
       </body>
     </html>
   );
