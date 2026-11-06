@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="flex flex-1 m-5 flex-col gap-2 md:flex-row">
+    <div className="flex flex-1 m-5 flex-col gap-2 lg:flex-row">
       <AdminGuard>
         <AdminSidebar />
         {children}

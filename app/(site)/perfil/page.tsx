@@ -104,7 +104,6 @@ export default function Perfil() {
   }
   return (
     <>
-
       <main className="flex flex-1 flex-col w-full h-full bg-line-strong p-4 gap-4 lg:flex-row">
         <section className="flex flex-col w-full justify-center items-center bg-ink text-text rounded-2xl p-8 lg:w-[390px] lg:shrink-0">
           {loading ? (
@@ -133,11 +132,8 @@ export default function Perfil() {
               <p className="flex flex-col text-center p-2">
                 <strong>{user?.role}</strong>
                 {user?.role === "Admin" && (
-                  <Link
-                    href="/admin"
-                    className="text-sm text-text"
-                  >
-                    Pagina de Admin
+                  <Link href="/admin" className="text-sm text-brand-deep">
+                    <strong>Pagina de Admin</strong>
                   </Link>
                 )}
               </p>

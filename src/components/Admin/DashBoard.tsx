@@ -1,5 +1,6 @@
 "use client";
 
+import { useSyncExternalStore } from "react";
 import {
   Bar,
   BarChart,
@@ -36,11 +37,35 @@ function colorAt(index: number) {
   return PALETTE[index % PALETTE.length];
 }
 
+const MOBILE_QUERY = "(max-width: 639px)";
+
+function subscribeToMobile(onChange: () => void) {
+  const media = window.matchMedia(MOBILE_QUERY);
+  media.addEventListener("change", onChange);
+  return () => media.removeEventListener("change", onChange);
+}
+
+function getMobileSnapshot() {
+  return window.matchMedia(MOBILE_QUERY).matches;
+}
+
+function getServerMobileSnapshot() {
+  return false;
+}
+
+function useIsMobile() {
+  return useSyncExternalStore(
+    subscribeToMobile,
+    getMobileSnapshot,
+    getServerMobileSnapshot,
+  );
+}
+
 function DonutChart({ data, unit }: { data: Datum[]; unit: string }) {
   const total = data.reduce((sum, d) => sum + d.value, 0);
 
   return (
-    <div className="relative h-72 w-full">
+    <div className="relative h-72 w-full min-w-0 shrink-0">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
@@ -71,7 +96,7 @@ function DonutChart({ data, unit }: { data: Datum[]; unit: string }) {
 
 function ValueBarChart({ data }: { data: Datum[] }) {
   return (
-    <div className="h-72 w-full">
+    <div className="h-72 w-full min-w-0 shrink-0">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 8, left: 8, right: 16 }}>
           <XAxis dataKey="name" tick={false} />
@@ -96,33 +121,70 @@ function ValueBarChart({ data }: { data: Datum[] }) {
 }
 
 function OrdersPieChart({ data }: { data: Datum[] }) {
+  const isMobile = useIsMobile();
+  const total = data.reduce((sum, d) => sum + d.value, 0);
+
   return (
-    <div className="h-72 w-full">
-      <ResponsiveContainer width="100%" height="100%">
-        <PieChart>
-          <Pie
-            data={data}
-            dataKey="value"
-            nameKey="name"
-            outerRadius="80%"
-            stroke="#FFFFFF"
-            strokeWidth={2}
-            label={({ percent }) =>
-              `${((percent ?? 0) * 100).toFixed(1).replace(".", ",")}%`
-            }
-          >
-            {data.map((_, index) => (
-              <Cell key={index} fill={colorAt(index)} />
-            ))}
-          </Pie>
-          <Tooltip
-            formatter={(value, name) => [
-              `${value} ${Number(value) === 1 ? "pedido" : "pedidos"}`,
-              name,
-            ]}
-          />
-        </PieChart>
-      </ResponsiveContainer>
+    <div className="flex w-full min-w-0 flex-col gap-3">
+      <div className="h-72 w-full min-w-0 shrink-0">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart margin={{ top: 8, right: 8, bottom: 8, left: 8 }}>
+            <Pie
+              data={data}
+              dataKey="value"
+              nameKey="name"
+              outerRadius={isMobile ? "86%" : "78%"}
+              stroke="#FFFFFF"
+              strokeWidth={2}
+              label={
+                isMobile
+                  ? false
+                  : ({ percent }) =>
+                      `${((percent ?? 0) * 100).toFixed(1).replace(".", ",")}%`
+              }
+              labelLine={!isMobile}
+            >
+              {data.map((_, index) => (
+                <Cell key={index} fill={colorAt(index)} />
+              ))}
+            </Pie>
+            <Tooltip
+              formatter={(value, name) => [
+                `${value} ${Number(value) === 1 ? "pedido" : "pedidos"}`,
+                name,
+              ]}
+            />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* No mobile os rótulos externos não cabem; a legenda mantém os percentuais. */}
+      {isMobile && (
+        <ul className="flex flex-col gap-1.5 text-xs">
+          {data.map((item, index) => {
+            const percent = total > 0 ? (item.value / total) * 100 : 0;
+
+            return (
+              <li
+                key={`${item.name}-${index}`}
+                className="flex items-center justify-between gap-3"
+              >
+                <span className="flex min-w-0 items-center gap-1.5">
+                  <span
+                    aria-hidden="true"
+                    className="h-2 w-2 shrink-0 rounded-full"
+                    style={{ backgroundColor: colorAt(index) }}
+                  />
+                  <span className="truncate">{item.name}</span>
+                </span>
+                <span className="shrink-0 tabular-nums text-[#52514E]">
+                  {percent.toFixed(1).replace(".", ",")}%
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </div>
   );
 }
@@ -143,7 +205,7 @@ function ChartCard({
   return (
     <section
       aria-labelledby={id}
-      className="box-border flex min-w-0 flex-[1_1_300px] flex-col gap-6 rounded-2xl border border-[#E7E5DF] p-6"
+      className="box-border flex w-full min-w-0 flex-col gap-4 rounded-2xl border border-[#E7E5DF] p-4 sm:flex-[1_1_300px] sm:gap-6 sm:p-6"
     >
       <div className="flex flex-col gap-1">
         <h2 id={id} className="text-[17px] font-semibold">
@@ -179,7 +241,7 @@ export default function TopProductsDashboard({
     .map((p) => ({ name: p.productName, value: p.orderCount }));
 
   return (
-    <main className="box-border flex min-h-[600px] min-w-0 flex-[999_1_560px] flex-col gap-7 rounded-2xl bg-white p-8">
+    <main className="box-border flex w-full min-w-0 flex-col gap-5 rounded-2xl bg-white p-4 sm:min-h-[600px] sm:gap-7 sm:p-8">
       <div className="flex flex-col gap-1.5">
         <h1 className="text-[28px] font-bold leading-tight tracking-tight">
           Dashboard de pedidos
@@ -189,7 +251,7 @@ export default function TopProductsDashboard({
         </p>
       </div>
 
-      <div className="flex flex-wrap items-stretch gap-5">
+      <div className="flex min-w-0 flex-col gap-5 sm:flex-row sm:flex-wrap sm:items-stretch">
         <ChartCard
           id="g-quantidade"
           title="Por quantidade"

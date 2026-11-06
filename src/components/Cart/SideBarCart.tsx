@@ -18,7 +18,7 @@ export default function SideBarCart({ items }: SideBarCartProps) {
   const totalUnits = items.reduce((total, item) => total + item.quantity, 0);
 
   return (
-    <aside className="sticky top-6 flex w-[300px] shrink-0 flex-col gap-4 self-start rounded-2xl border border-line bg-white p-5">
+    <aside className="sticky top-6 flex w-full shrink-0 flex-col gap-4 self-start rounded-2xl border border-line bg-white p-5 md:w-1/3">
       <h2 className="text-lg font-semibold">Resumo do pedido</h2>
 
       {isEmpty ? (

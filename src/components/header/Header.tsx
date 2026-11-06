@@ -70,7 +70,7 @@ export default function Header() {
 
               </>
             ) : (
-              <Link href="/auth" className="text-sm text-black hidden md:block">
+              <Link href="/auth" className="text-sm text-black">
                 Entrar
               </Link>
             )}
