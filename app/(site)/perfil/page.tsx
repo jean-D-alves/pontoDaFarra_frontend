@@ -5,6 +5,7 @@ import Loading from "@/src/components/Loading";
 import ModelUpdate from "@/src/components/ModelUpdate";
 import OrderHistory from "@/src/components/profile/OrderHistory";
 import LocationList from "@/src/components/profile/LocationList";
+import LegalConsents from "@/src/components/profile/LegalConsents";
 import { useUser } from "@/src/Context/UserContext";
 import { requestDeleteUser } from "@/src/Handle/User";
 import { PencilIcon } from "lucide-react";
@@ -12,11 +13,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type KeyboardEvent } from "react";
 
-type ProfileTab = "orders" | "locations";
+type ProfileTab = "orders" | "locations" | "consents";
 
 const PROFILE_TABS: { id: ProfileTab; label: string }[] = [
   { id: "orders", label: "Meus pedidos" },
   { id: "locations", label: "Meus endereços" },
+  { id: "consents", label: "Meus aceites" },
 ];
 
 export default function Perfil() {
@@ -222,6 +224,16 @@ export default function Perfil() {
             className="mt-6 w-full"
           >
             <LocationList />
+          </div>
+
+          <div
+            role="tabpanel"
+            id="profile-panel-consents"
+            aria-labelledby="profile-tab-consents"
+            hidden={activeTab !== "consents"}
+            className="mt-6 w-full"
+          >
+            {activeTab === "consents" && <LegalConsents />}
           </div>
         </section>
       </main>

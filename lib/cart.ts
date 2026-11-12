@@ -247,9 +247,21 @@ export type OrderLocation = {
   state: string;
 };
 
+export type PaymentMethod = "pix" | "credit" | "debit" | "cash";
+
+export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
+  pix: "Pix",
+  credit: "Cartão de crédito",
+  debit: "Cartão de débito",
+  cash: "Dinheiro (espécie)",
+};
+
 export type OrderDetails = {
   location?: OrderLocation | null;
   note?: string | null;
+  paymentMethod?: PaymentMethod | null;
+  /** Valor do troco em centavos; usado apenas quando `paymentMethod` é "cash". */
+  cashChangeCents?: number | null;
 };
 
 function formatCustomerPhone(phone: string): string {
@@ -340,6 +352,31 @@ export function formatOrderMessage(
     ORDER_MESSAGE_SEPARATOR,
     ...formatLocationLines(details.location),
   );
+
+  const paymentMethod = details.paymentMethod;
+
+  if (paymentMethod) {
+    const paymentLines = [PAYMENT_METHOD_LABELS[paymentMethod]];
+    const cashChangeCents = details.cashChangeCents;
+
+    if (
+      paymentMethod === "cash" &&
+      typeof cashChangeCents === "number" &&
+      Number.isFinite(cashChangeCents) &&
+      cashChangeCents > 0
+    ) {
+      paymentLines.push(
+        `Troco para: ${formatCurrency(cashChangeCents / 100)}`,
+      );
+    }
+
+    blocks.push(
+      ORDER_MESSAGE_SEPARATOR,
+      "*PAGAMENTO*",
+      ORDER_MESSAGE_SEPARATOR,
+      ...paymentLines,
+    );
+  }
 
   const note = details.note?.trim();
 

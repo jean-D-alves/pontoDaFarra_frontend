@@ -23,28 +23,69 @@ export async function requestSignIn(email: string, password: string) {
   if (!response.ok) return null;
   return response.json();
 }
+export type SignUpResult =
+  | { ok: true; status: number }
+  | { ok: false; status: number; message: string };
+
+function readRegisterError(status: number, fallback: string): string {
+  switch (status) {
+    case 400:
+      return "Não foi possível criar a conta. Verifique os dados informados e tente novamente.";
+    case 401:
+      return "Sessão expirada. Atualize a página e tente novamente.";
+    case 403:
+      return "Você não tem permissão para criar esta conta.";
+    case 409:
+      return "Este e-mail já está cadastrado. Tente entrar com sua conta.";
+    case 429:
+      return "Muitas requisições. Aguarde um instante e tente novamente.";
+    default:
+      return status >= 500
+        ? "Serviço indisponível no momento. Tente novamente."
+        : fallback;
+  }
+}
+
 export async function requestSignUp(
   name: string,
   email: string,
   password: string,
   phoneNumber: string,
-) {
-  const response = await fetch("/api/auth/register", {
-    method: "POST",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      Name: name,
-      Email: email,
-      Password: password,
-      PhoneNumber: phoneNumber,
-    }),
-  });
-  console.log(response);
-  if (!response.ok) return null;
-  return response.json();
+  legalDocumentIds: string[],
+): Promise<SignUpResult> {
+  try {
+    const response = await fetch("/api/auth/register", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        Name: name,
+        Email: email,
+        Password: password,
+        PhoneNumber: phoneNumber,
+        legalDocumentIds,
+      }),
+    });
+
+    if (response.ok) return { ok: true, status: response.status };
+
+    return {
+      ok: false,
+      status: response.status,
+      message: readRegisterError(
+        response.status,
+        "Não foi possível criar a conta. Tente novamente.",
+      ),
+    };
+  } catch {
+    return {
+      ok: false,
+      status: 0,
+      message: "Não foi possível conectar ao servidor. Tente novamente.",
+    };
+  }
 }
 
 type typeResponse = { message: string };

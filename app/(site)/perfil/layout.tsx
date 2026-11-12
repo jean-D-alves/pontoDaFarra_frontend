@@ -1,6 +1,7 @@
 
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import LegalConsentGate from "@/src/components/legal/LegalConsentGate";
 
 export const metadata: Metadata = {
   title: "Ponto da Farra | Seu Perfil",
@@ -11,6 +12,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
     <main className="min-h-full flex flex-col">
       {children}
+      <LegalConsentGate />
     </main>
   );
 }

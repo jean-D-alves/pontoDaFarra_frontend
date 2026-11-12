@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 import AdminGuard from "@/src/components/Admin/AdminGuard";
-import Header from "@/src/components/header/Header";
 import AdminSidebar from "@/src/components/Admin/adminSidebar";
+import LegalConsentGate from "@/src/components/legal/LegalConsentGate";
 
 export const metadata: Metadata = {
   title: "Ponto da Farra | Página Admin",
@@ -16,6 +16,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
       <AdminGuard>
         <AdminSidebar />
         {children}
+        <LegalConsentGate />
       </AdminGuard>
     </div>
   );

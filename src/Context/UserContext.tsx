@@ -15,8 +15,8 @@ import {
   requestRefresh,
   requestSignIn,
   requestSignUp,
+  type SignUpResult,
 } from "../Handle/Auth";
-import { isNullOrUndefined } from "util";
 
 type UserContextType = {
   user: User | null;
@@ -28,7 +28,8 @@ type UserContextType = {
     email: string,
     password: string,
     phoneNumber: string,
-  ) => Promise<boolean>;
+    legalDocumentIds: string[],
+  ) => Promise<SignUpResult>;
   isAdmin: boolean;
   refresh: () => Promise<boolean>;
   logout: () => Promise<boolean>;
@@ -109,17 +110,39 @@ export function UserProvider({ children }: { children: ReactNode }) {
       email: string,
       password: string,
       phoneNumber: string,
-    ) => {
-      const data = await requestSignUp(name, email, password, phoneNumber);
-      if (!data) return false;
+      legalDocumentIds: string[],
+    ): Promise<SignUpResult> => {
+      const result = await requestSignUp(
+        name,
+        email,
+        password,
+        phoneNumber,
+        legalDocumentIds,
+      );
+      if (!result.ok) return result;
 
       try {
         const me = await loadUser();
         setUser(me);
-        return me !== null;
+
+        if (!me) {
+          return {
+            ok: false,
+            status: result.status,
+            message:
+              "Conta criada, mas não foi possível carregar seu perfil. Entre novamente.",
+          };
+        }
+
+        return result;
       } catch {
         setUser(null);
-        return false;
+        return {
+          ok: false,
+          status: 0,
+          message:
+            "Conta criada, mas não foi possível carregar seu perfil. Entre novamente.",
+        };
       }
     },
     [loadUser],

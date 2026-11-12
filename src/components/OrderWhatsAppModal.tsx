@@ -7,14 +7,31 @@ import {
   useState,
   type FormEvent,
 } from "react";
-import { LoaderCircle, MapPin, MessageCircle, X } from "lucide-react";
+import {
+  Banknote,
+  CreditCard,
+  Landmark,
+  LoaderCircle,
+  MapPin,
+  MessageCircle,
+  QrCode,
+  X,
+  type LucideIcon,
+} from "lucide-react";
 import Modal from "@/src/components/Modal";
 import ProductFormField from "@/src/components/Admin/ProductFormField";
-import { formatOrderMessage, isOrderValid, saveLastOrder } from "@/lib/cart";
+import {
+  PAYMENT_METHOD_LABELS,
+  formatOrderMessage,
+  isOrderValid,
+  saveLastOrder,
+  type PaymentMethod,
+} from "@/lib/cart";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import { useUser } from "@/src/Context/UserContext";
 import { requestLocations } from "@/src/Handle/Location";
 import { requestOrder } from "@/src/Handle/Order";
+import { formatCurrency } from "@/src/Handle/Currency";
 import type { OrderItem, OrderPayload } from "@/src/types/cart";
 import type { Location } from "@/src/types/location";
 
@@ -24,6 +41,27 @@ const INVALID_ORDER_MESSAGE =
   "Pedido inválido. Revise os itens do carrinho e tente novamente.";
 const SEND_ERROR_MESSAGE =
   "Não foi possível registrar o pedido. Tente novamente.";
+const PAYMENT_REQUIRED_MESSAGE =
+  "Selecione uma forma de pagamento para enviar o pedido.";
+
+const PAYMENT_OPTIONS: ReadonlyArray<{
+  value: PaymentMethod;
+  label: string;
+  Icon: LucideIcon;
+}> = [
+  { value: "pix", label: PAYMENT_METHOD_LABELS.pix, Icon: QrCode },
+  { value: "credit", label: PAYMENT_METHOD_LABELS.credit, Icon: CreditCard },
+  { value: "debit", label: PAYMENT_METHOD_LABELS.debit, Icon: Landmark },
+  { value: "cash", label: PAYMENT_METHOD_LABELS.cash, Icon: Banknote },
+];
+
+/** Converte o valor formatado em reais para centavos (ex.: "R$ 50,00" → 5000). */
+function parseCashChangeCents(value: string): number | null {
+  const digits = value.replace(/\D/g, "").slice(0, 11);
+  const cents = digits ? Number(digits) : 0;
+
+  return Number.isFinite(cents) && cents > 0 ? cents : null;
+}
 
 const focusRing =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black";
@@ -72,6 +110,7 @@ export default function OrderWhatsAppModal({
   const titleId = useId();
   const descriptionId = useId();
   const noteId = useId();
+  const cashChangeId = useId();
   const locationsErrorId = useId();
 
   const { user } = useUser();
@@ -83,6 +122,10 @@ export default function OrderWhatsAppModal({
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(
     null,
   );
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(
+    null,
+  );
+  const [cashChangeCents, setCashChangeCents] = useState<number | null>(null);
   const [note, setNote] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -121,6 +164,13 @@ export default function OrderWhatsAppModal({
       return;
     }
 
+    if (!paymentMethod) {
+      setError(PAYMENT_REQUIRED_MESSAGE);
+      return;
+    }
+
+    const payment = paymentMethod;
+
     submittingRef.current = true;
     setIsSubmitting(true);
 
@@ -150,7 +200,12 @@ export default function OrderWhatsAppModal({
           phone: user?.phoneNumber,
         },
         new Date(),
-        { location: selectedLocation, note },
+        {
+          location: selectedLocation,
+          note,
+          paymentMethod: payment,
+          cashChangeCents: payment === "cash" ? cashChangeCents : null,
+        },
       );
       const url = buildWhatsAppUrl(message);
 
@@ -190,7 +245,8 @@ export default function OrderWhatsAppModal({
               Pedir pelo WhatsApp
             </h2>
             <p id={descriptionId} className="text-sm text-muted">
-              Escolha a localização e adicione uma mensagem para o seu pedido.
+              Escolha a localização, a forma de pagamento e adicione uma
+              mensagem para o seu pedido.
             </p>
           </div>
 
@@ -318,6 +374,75 @@ export default function OrderWhatsAppModal({
                   </label>
                 </div>
               </>
+            )}
+          </fieldset>
+
+          <fieldset className="flex flex-col gap-2">
+            <legend className="mb-1 text-sm font-semibold text-black">
+              Forma de pagamento
+            </legend>
+
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              {PAYMENT_OPTIONS.map(({ value, label, Icon }) => {
+                const selected = paymentMethod === value;
+
+                return (
+                  <label
+                    key={value}
+                    className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition ${
+                      selected
+                        ? "border-line-strong bg-surface"
+                        : "border-line bg-white hover:bg-surface"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="order-payment"
+                      value={value}
+                      checked={selected}
+                      onChange={() => {
+                        setPaymentMethod(value);
+                        setError(null);
+
+                        if (value !== "cash") {
+                          setCashChangeCents(null);
+                        }
+                      }}
+                      className="h-4 w-4 shrink-0 accent-black"
+                    />
+                    <Icon
+                      aria-hidden="true"
+                      size={18}
+                      className={`shrink-0 ${
+                        selected ? "text-black" : "text-stone"
+                      }`}
+                    />
+                    <span className="text-sm font-semibold text-stone-strong">
+                      {label}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+
+            {paymentMethod === "cash" && (
+              <div className="mt-1">
+                <ProductFormField
+                  id={cashChangeId}
+                  label="Precisa de troco para quanto? (opcional)"
+                  value={
+                    cashChangeCents === null
+                      ? ""
+                      : formatCurrency(cashChangeCents / 100)
+                  }
+                  onChange={(value) =>
+                    setCashChangeCents(parseCashChangeCents(value))
+                  }
+                  placeholder="ex.: R$ 50,00"
+                  inputMode="numeric"
+                  helper="Digite apenas números; os dois últimos são os centavos."
+                />
+              </div>
             )}
           </fieldset>
 

@@ -24,6 +24,14 @@ export default function FooterSection() {
       name: "Carrinho",
       rota: "/carrinho",
     },
+    {
+      name: "Política de Privacidade",
+      rota: "/politica-de-privacidade",
+    },
+    {
+      name: "Termos de Uso",
+      rota: "/termos-de-uso",
+    },
   ];
   const PerfilLinks = [
     {

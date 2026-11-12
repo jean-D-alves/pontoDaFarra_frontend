@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useUser } from "@/src/Context/UserContext";
 import Image from "next/image";
 import { Eye, EyeOff } from "lucide-react";
 import { formatPhone, isValidPhone, phoneToDigits } from "@/src/Handle/phone";
+import { getActive } from "@/src/Handle/Legal";
+import type { LegalDocument } from "@/src/types/legal";
 type FieldProps = {
   id: string;
   label: string;
@@ -85,9 +87,60 @@ export default function Auth() {
   const [signUpSenha, setSignUpSenha] = useState("");
   const [signUpPhoneNumber, setSignUpPhoneNumber] = useState("");
 
+  const [legalDocuments, setLegalDocuments] = useState<LegalDocument[] | null>(
+    null,
+  );
+  const [legalLoading, setLegalLoading] = useState(false);
+  const [legalError, setLegalError] = useState<string | null>(null);
+  const [acceptedLegal, setAcceptedLegal] = useState(false);
+
+  const loadLegalDocuments = useCallback(async () => {
+    setLegalLoading(true);
+    setLegalError(null);
+
+    try {
+      const [privacyPolicy, termsOfService] = await Promise.all([
+        getActive("PrivacyPolicy"),
+        getActive("TermsOfService"),
+      ]);
+
+      const documents = [privacyPolicy, termsOfService].filter(
+        (document): document is LegalDocument => document !== null,
+      );
+
+      setLegalDocuments(documents);
+
+      if (documents.length === 0) {
+        setLegalError(
+          "Nenhum documento legal está disponível no momento. Tente novamente mais tarde.",
+        );
+      }
+    } catch {
+      setLegalDocuments(null);
+      setLegalError(
+        "Não foi possível carregar os documentos legais. Tente novamente.",
+      );
+    } finally {
+      setLegalLoading(false);
+    }
+  }, []);
+
+  const privacyDocument =
+    legalDocuments?.find((document) => document.type === "PrivacyPolicy") ??
+    null;
+  const termsDocument =
+    legalDocuments?.find((document) => document.type === "TermsOfService") ??
+    null;
+
   function toggleScreen() {
     setError(null);
-    setIsLogin((prev) => !prev);
+    const nextIsLogin = !isLogin;
+    setIsLogin(nextIsLogin);
+
+    if (!nextIsLogin) {
+      setAcceptedLegal(false);
+      void loadLegalDocuments();
+    }
   }
   const phoneError =
     signUpPhoneNumber && !isValidPhone(signUpPhoneNumber)
@@ -118,15 +171,38 @@ export default function Auth() {
       return;
     }
 
+    if (!legalDocuments || legalDocuments.length === 0) {
+      setError(
+        "Os documentos legais ainda não foram carregados. Tente novamente.",
+      );
+      return;
+    }
+
+    if (!acceptedLegal) {
+      setError("Você precisa aceitar os documentos legais para criar a conta.");
+      return;
+    }
+
     setLoading(true);
     try {
-      const ok = await signUp(
+      const result = await signUp(
         signUpNome,
         signUpEmail,
         signUpSenha,
-        phoneToDigits(signUpPhoneNumber), 
+        phoneToDigits(signUpPhoneNumber),
+        legalDocuments.map((document) => document.legalDocumentId),
       );
-      if (!ok) throw new Error("Email ou senha inválidos");
+
+      if (!result.ok) {
+        // 400 pode indicar que os documentos ativos mudaram desde o carregamento.
+        if (result.status === 400) {
+          setAcceptedLegal(false);
+          void loadLegalDocuments();
+        }
+
+        throw new Error(result.message);
+      }
+
       router.push("/");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao criar conta");
@@ -195,7 +271,7 @@ export default function Auth() {
         }`}
       >
         <Image
-          src="/image/CervejaBackGround.jpg"
+          src="/Image/CervejaBackGround.jpg"
           alt=""
           fill
           priority
@@ -246,8 +322,76 @@ export default function Auth() {
             inputMode="tel"
             error={phoneError}
           />
+
+          <div className="flex flex-col gap-2 text-sm font-normal">
+            {legalLoading && (
+              <p className="text-muted">Carregando documentos legais…</p>
+            )}
+
+            {!legalLoading && legalError && (
+              <div className="rounded-xl bg-unavailable-bg px-3 py-2 text-sm font-medium text-unavailable-text">
+                <p role="alert">{legalError}</p>
+                <button
+                  type="button"
+                  onClick={() => void loadLegalDocuments()}
+                  className="mt-2 font-semibold underline underline-offset-2"
+                >
+                  Tentar novamente
+                </button>
+              </div>
+            )}
+
+            {!legalLoading && !legalError && (
+              <div className="flex items-start gap-2">
+                <input
+                  id="signup-legal"
+                  type="checkbox"
+                  checked={acceptedLegal}
+                  onChange={(event) =>
+                    setAcceptedLegal(event.target.checked)
+                  }
+                  aria-required="true"
+                  className="mt-1 h-4 w-4 shrink-0 accent-black"
+                />
+                <label
+                  htmlFor="signup-legal"
+                  className="leading-relaxed text-body"
+                >
+                  Li e aceito a{" "}
+                  {privacyDocument ? (
+                    <Link
+                      href="/politica-de-privacidade"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-semibold text-brand-deep underline underline-offset-2 transition hover:text-black"
+                    >
+                      Política de Privacidade
+                    </Link>
+                  ) : null}
+                  {privacyDocument && termsDocument ? " e os " : null}
+                  {termsDocument ? (
+                    <Link
+                      href="/termos-de-uso"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-semibold text-brand-deep underline underline-offset-2 transition hover:text-black"
+                    >
+                      Termos de Uso
+                    </Link>
+                  ) : null}
+                  .
+                </label>
+              </div>
+            )}
+          </div>
+
           <button
-            disabled={loading}
+            disabled={
+              loading ||
+              legalLoading ||
+              !legalDocuments ||
+              legalDocuments.length === 0
+            }
             className="h-10 bg-brand-gradient rounded-xl disabled:opacity-50"
           >
             {loading ? "Criando..." : "Criar"}

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  FileText,
   LayoutDashboard,
   Package,
   ReceiptText,
@@ -11,10 +12,6 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useUser } from "@/src/Context/UserContext";
-interface AdminSidebarProps {
-  name: string;
-  role: string;
-}
 
 type NavItem = {
   label: string;
@@ -28,6 +25,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Categorias", href: "/admin/categorias", icon: Tag },
   { label: "Pedidos", href: "/admin/pedidos", icon: ReceiptText },
   { label: "Usuários", href: "/admin/usuarios", icon: Users },
+  { label: "Documentos", href: "/admin/documentos", icon: FileText },
 ];
 
 function getInitials(name: string): string {
