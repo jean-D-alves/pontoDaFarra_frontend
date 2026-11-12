@@ -49,7 +49,7 @@ function buildImageRemotePatterns(): RemotePattern[] {
 
 const nextConfig: NextConfig = {
   /* config options here */
-  allowedDevOrigins: ["192.168.18.125"],
+  allowedDevOrigins: [process.env.NEXT_PUBLIC_API_URL!],
   experimental: {
     agentFeedback: true,
   },

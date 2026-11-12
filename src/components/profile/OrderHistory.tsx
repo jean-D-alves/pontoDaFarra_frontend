@@ -8,7 +8,7 @@ import EmptyState from "@/src/components/EmptyState";
 import ConfirmMessage from "@/src/components/ConfirmMessage";
 import { useUser } from "@/src/Context/UserContext";
 import { requestOrderDelete, requestOrderMe } from "@/src/Handle/Order";
-import { getProductById } from "@/src/services/catalog";
+import { requestProductGetId } from "@/src/Handle/Product";
 import type { Order } from "@/src/types/order";
 import type { Product } from "@/src/types/Products";
 import OrderCard from "./OrderCard";
@@ -29,7 +29,8 @@ async function loadProducts(
   const entries = await Promise.all(
     productIds.map(async (productId) => {
       try {
-        return [productId, await getProductById(productId)] as const;
+        // Mesma origem (/api/products/[id]): funciona em localhost, LAN ou IP.
+        return [productId, await requestProductGetId(productId)] as const;
       } catch {
         // Produto removido ou backend indisponível: o card mostra o fallback.
         return [productId, null] as const;
