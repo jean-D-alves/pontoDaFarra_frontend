@@ -9,22 +9,26 @@ import {
 } from "react";
 import {
   Banknote,
+  Bike,
   CreditCard,
   Landmark,
   LoaderCircle,
   MapPin,
   MessageCircle,
   QrCode,
+  Store,
   X,
   type LucideIcon,
 } from "lucide-react";
 import Modal from "@/src/components/Modal";
 import ProductFormField from "@/src/components/Admin/ProductFormField";
 import {
+  FULFILLMENT_METHOD_LABELS,
   PAYMENT_METHOD_LABELS,
   formatOrderMessage,
   isOrderValid,
   saveLastOrder,
+  type FulfillmentMethod,
   type PaymentMethod,
 } from "@/lib/cart";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
@@ -69,6 +73,8 @@ const focusRing =
 interface OrderWhatsAppModalProps {
   order: OrderPayload;
   itemNames: Record<string, string>;
+  fulfillmentMethod: FulfillmentMethod;
+  onFulfillmentMethodChange: (method: FulfillmentMethod) => void;
   onClose: () => void;
   onSent?: () => void;
 }
@@ -104,6 +110,8 @@ function goToCheckoutTab(tab: Window | null, url: string) {
 export default function OrderWhatsAppModal({
   order,
   itemNames,
+  fulfillmentMethod,
+  onFulfillmentMethodChange,
   onClose,
   onSent,
 }: OrderWhatsAppModalProps) {
@@ -177,30 +185,35 @@ export default function OrderWhatsAppModal({
     const checkoutTab = openCheckoutTab();
 
     try {
-      const registered = await requestOrder({
-        totalValue: order.totalValue,
-        items: order.items,
+      const createdOrder = await requestOrder({
+        items: order.items.map(({ productId, quantity }) => ({
+          productId,
+          quantity,
+        })),
       });
 
-      if (!registered) {
+      if (!createdOrder) {
         checkoutTab?.close();
         setError(SEND_ERROR_MESSAGE);
         return;
       }
 
       const selectedLocation =
-        locations?.find(
-          (location) => location.locationId === selectedLocationId,
-        ) ?? null;
+        !isPickup
+          ? locations?.find(
+              (location) => location.locationId === selectedLocationId,
+            ) ?? null
+          : null;
       const message = formatOrderMessage(
-        order,
+        createdOrder,
         itemNames,
         {
-          name: user?.name,
-          phone: user?.phoneNumber,
+          name: createdOrder.customerName ?? user?.name,
+          phone: createdOrder.customerPhone ?? user?.phoneNumber,
         },
-        new Date(),
+        new Date(createdOrder.createdAt),
         {
+          fulfillmentMethod,
           location: selectedLocation,
           note,
           paymentMethod: payment,
@@ -215,7 +228,7 @@ export default function OrderWhatsAppModal({
         return;
       }
 
-      saveLastOrder(order, itemNames);
+      saveLastOrder(createdOrder, itemNames);
       goToCheckoutTab(checkoutTab, url);
       onSent?.();
     } catch {
@@ -228,6 +241,8 @@ export default function OrderWhatsAppModal({
   }
 
   const isLoadingLocations = locations === null;
+  const isPickup = fulfillmentMethod === "pickup";
+  const effectiveLocationId = isPickup ? null : selectedLocationId;
 
   return (
     <Modal
@@ -245,8 +260,8 @@ export default function OrderWhatsAppModal({
               Pedir pelo WhatsApp
             </h2>
             <p id={descriptionId} className="text-sm text-muted">
-              Escolha a localização, a forma de pagamento e adicione uma
-              mensagem para o seu pedido.
+              Escolha como receber, o local (para entrega), a forma de pagamento
+              e adicione uma mensagem para o seu pedido.
             </p>
           </div>
 
@@ -266,12 +281,73 @@ export default function OrderWhatsAppModal({
           aria-busy={isSubmitting}
           className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto p-5"
         >
+          <fieldset className="flex flex-col gap-2">
+            <legend className="mb-1 text-sm font-semibold text-black">
+              Como deseja receber
+            </legend>
+
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              {([
+                {
+                  value: "delivery" as const,
+                  label: "Delivery",
+                  description: "Receba no endereço informado (taxa calculada pelo backend).",
+                  Icon: Bike,
+                },
+                {
+                  value: "pickup" as const,
+                  label: "Retirada no estabelecimento",
+                  description: "Busque no estabelecimento, sem taxa de entrega.",
+                  Icon: Store,
+                },
+              ]).map(({ value, label, description, Icon }) => {
+                const selected = fulfillmentMethod === value;
+                return (
+                  <label
+                    key={value}
+                    className={`flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition ${
+                      selected
+                        ? "border-line-strong bg-surface"
+                        : "border-line bg-white hover:bg-surface"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="order-fulfillment"
+                      value={value}
+                      checked={selected}
+                      onChange={() => {
+                        onFulfillmentMethodChange(value);
+                        if (value === "pickup") {
+                          setSelectedLocationId(null);
+                        }
+                      }}
+                      className="mt-1 h-4 w-4 shrink-0 accent-black"
+                    />
+                    <Icon
+                      aria-hidden="true"
+                      size={18}
+                      className={`mt-0.5 shrink-0 ${selected ? "text-black" : "text-stone"}`}
+                    />
+                    <span className="min-w-0">
+                      <span className="block text-sm font-semibold text-stone-strong">
+                        {label}
+                      </span>
+                      <span className="block text-xs text-stone">{description}</span>
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+          </fieldset>
+
+          {!isPickup && (
           <fieldset
             aria-describedby={locationsError ? locationsErrorId : undefined}
             className="flex flex-col gap-2"
           >
             <legend className="mb-1 text-sm font-semibold text-black">
-              Localização
+              Localização (entrega)
             </legend>
 
             {isLoadingLocations ? (
@@ -376,6 +452,13 @@ export default function OrderWhatsAppModal({
               </>
             )}
           </fieldset>
+          )}
+
+          {isPickup && (
+            <div className="rounded-xl border border-line bg-surface p-3 text-sm text-stone">
+              Retirada no estabelecimento: não é necessário informar endereço de entrega e não há cobrança de taxa de entrega.
+            </div>
+          )}
 
           <fieldset className="flex flex-col gap-2">
             <legend className="mb-1 text-sm font-semibold text-black">

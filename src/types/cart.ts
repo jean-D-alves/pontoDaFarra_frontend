@@ -21,3 +21,13 @@ export type OrderPayload = {
   totalValue: number;
   items: OrderItem[];
 };
+
+/** Item enviado na cria��o do pedido (o pre�o � calculado no backend). */
+export type CreateOrderItem = {
+  productId: string;
+  quantity: number;
+};
+
+export type CreateOrderRequest = {
+  items: CreateOrderItem[];
+};

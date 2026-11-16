@@ -1,5 +1,5 @@
-import type { OrderItem, OrderPayload } from "@/src/types/cart";
-import type { OrderListResponse, OrdersResponse } from "../types/order";
+import type { CreateOrderRequest } from "@/src/types/cart";
+import type { Order, OrderListResponse, OrdersResponse } from "../types/order";
 import { MoreOrderResponse } from "../types/Products";
 import type { OrderMetricsResponse } from "@/src/types/order";
 
@@ -20,11 +20,13 @@ export async function requestOrderChart(): Promise<OrderMetricsResponse> {
 }
 
 export async function requestOrder(
-  order: Pick<OrderPayload, "totalValue" | "items">,
-): Promise<boolean> {
-  const body: { totalValue: number; items: OrderItem[] } = {
-    totalValue: order.totalValue,
-    items: order.items,
+  order: CreateOrderRequest,
+): Promise<Order | null> {
+  const body: CreateOrderRequest = {
+    items: order.items.map(({ productId, quantity }) => ({
+      productId,
+      quantity,
+    })),
   };
 
   const response = await fetch("/api/order", {
@@ -37,7 +39,11 @@ export async function requestOrder(
     body: JSON.stringify(body),
   });
 
-  return response.ok;
+  if (!response.ok) {
+    return null;
+  }
+
+  return (await response.json()) as Order;
 }
 
 export async function requestOrderMe(): Promise<OrdersResponse> {

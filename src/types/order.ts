@@ -8,10 +8,12 @@ export type OrderItem = {
 
 export type Order = {
   orderId: string;
-  userId: string;
+  userId: string | null;
   customerName: string;
-  customerPhone: string;
+  customerPhone: string | null;
   totalValue: number;
+  /** Presente nas respostas que incluem taxa de entrega (ex.: cria��o, meus pedidos). */
+  deliveryFee?: number;
   createdAt: string;
   items: OrderItem[];
 };

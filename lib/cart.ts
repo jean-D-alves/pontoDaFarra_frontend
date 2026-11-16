@@ -1,5 +1,6 @@
 import { formatCurrency } from "@/src/Handle/Currency";
 import type { CartItem, OrderItem, OrderPayload } from "@/src/types/cart";
+import type { Order } from "@/src/types/order";
 import type { Product } from "@/src/types/Products";
 
 export const CART_STORAGE_KEY = "pontodafarra:cart";
@@ -256,7 +257,15 @@ export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   cash: "Dinheiro (espécie)",
 };
 
+export type FulfillmentMethod = "delivery" | "pickup";
+
+export const FULFILLMENT_METHOD_LABELS: Record<FulfillmentMethod, string> = {
+  delivery: "Entrega",
+  pickup: "Retirada no estabelecimento",
+};
+
 export type OrderDetails = {
+  fulfillmentMethod?: FulfillmentMethod | null;
   location?: OrderLocation | null;
   note?: string | null;
   paymentMethod?: PaymentMethod | null;
@@ -307,58 +316,69 @@ function formatLocationLines(location?: OrderLocation | null): string[] {
 }
 
 /**
- * Monta a mensagem do WhatsApp apenas com os caracteres de formatação que o
- * próprio WhatsApp interpreta: `*negrito*`, `_itálico_` e `~riscado~`.
+ * Monta a mensagem do WhatsApp com os valores oficiais retornados pela API.
+ * Usa `*negrito*`, `_itálico_` e quebras de linha interpretadas pelo WhatsApp.
  */
 export function formatOrderMessage(
-  order: OrderPayload,
+  order: Pick<Order, "customerName" | "items" | "totalValue" | "deliveryFee">,
   itemNames: Record<string, string>,
   customer?: OrderCustomer,
   date: Date = new Date(),
   details: OrderDetails = {},
 ): string {
-  const itemBlocks = order.items.map((item: OrderItem) => {
-    const name = itemNames[item.productId] || "Produto";
-    const subtotal =
-      (Math.round(item.unitPrice * 100) * item.quantity) / 100;
+  const customerName =
+    order.customerName?.trim() || customer?.name?.trim() || "Cliente";
 
-    return [
-      `*${item.quantity}x* ${name}`,
-      `_${formatCurrency(item.unitPrice)} un._ → *${formatCurrency(subtotal)}*`,
-    ].join("\n");
+  const productLines = order.items.map((item) => {
+    const name = itemNames[item.productId] || "Produto";
+    const unitPrice = item.unitPrice;
+    const subtotal = (Math.round(unitPrice * 100) * item.quantity) / 100;
+    return `- ${name} — ${item.quantity}x ${formatCurrency(unitPrice)} = ${formatCurrency(subtotal)}`;
   });
 
-  const totalItems = order.items.reduce(
-    (total, item) => total + item.quantity,
+  const subtotalProductsCents = order.items.reduce(
+    (total, item) => total + Math.round(item.unitPrice * 100) * item.quantity,
     0,
   );
+  const subtotalProducts = subtotalProductsCents / 100;
+  const deliveryFee = order.deliveryFee ?? 0;
 
-  const customerLines = [
-    customer?.name?.trim() ? `*Cliente:* ${customer.name.trim()}` : null,
-    customer?.phone?.trim()
-      ? `*Contato:* ${formatCustomerPhone(customer.phone)}`
-      : null,
-  ].filter((line): line is string => line !== null);
+  const fulfillmentLabel =
+    details.fulfillmentMethod === "pickup"
+      ? "Retirada no estabelecimento"
+      : details.fulfillmentMethod === "delivery"
+        ? "Entrega"
+        : null;
 
-  const blocks: string[] = ["*PONTO DA FARRA*", "*NOVO PEDIDO*"];
-
-  if (customerLines.length > 0) {
-    blocks.push(ORDER_MESSAGE_SEPARATOR, ...customerLines);
-  }
+  const blocks: string[] = [
+    "*NOVO PEDIDO — PONTO DA FARRA*",
+    "",
+    `Cliente: ${customerName}`,
+    ...(fulfillmentLabel ? [`Modalidade: ${fulfillmentLabel}`] : []),
+    "",
+    "*Produtos:*",
+    ...productLines,
+    "",
+    `Subtotal: ${formatCurrency(subtotalProducts)}`,
+    `Taxa de entrega: ${formatCurrency(deliveryFee)}`,
+    "",
+    `*TOTAL: ${formatCurrency(order.totalValue)}*`,
+  ];
 
   blocks.push(
+    "",
     ORDER_MESSAGE_SEPARATOR,
-    "*LOCALIZAÇÃO*",
+    details.fulfillmentMethod === "pickup" ? "*RETIRADA*" : "*LOCALIZAÇÃO*",
     ORDER_MESSAGE_SEPARATOR,
-    ...formatLocationLines(details.location),
+    ...(details.fulfillmentMethod === "pickup"
+      ? ["Retirada no estabelecimento"]
+      : formatLocationLines(details.location)),
   );
 
   const paymentMethod = details.paymentMethod;
-
   if (paymentMethod) {
     const paymentLines = [PAYMENT_METHOD_LABELS[paymentMethod]];
     const cashChangeCents = details.cashChangeCents;
-
     if (
       paymentMethod === "cash" &&
       typeof cashChangeCents === "number" &&
@@ -369,7 +389,6 @@ export function formatOrderMessage(
         `Troco para: ${formatCurrency(cashChangeCents / 100)}`,
       );
     }
-
     blocks.push(
       ORDER_MESSAGE_SEPARATOR,
       "*PAGAMENTO*",
@@ -379,7 +398,6 @@ export function formatOrderMessage(
   }
 
   const note = details.note?.trim();
-
   if (note) {
     blocks.push(
       ORDER_MESSAGE_SEPARATOR,
@@ -391,17 +409,6 @@ export function formatOrderMessage(
 
   blocks.push(
     ORDER_MESSAGE_SEPARATOR,
-    "*ITENS*",
-    ORDER_MESSAGE_SEPARATOR,
-    "",
-    itemBlocks.join("\n\n"),
-    "",
-    ORDER_MESSAGE_SEPARATOR,
-    "*RESUMO*",
-    ORDER_MESSAGE_SEPARATOR,
-    `Itens: ${totalItems}`,
-    `TOTAL: *${formatCurrency(order.totalValue)}*`,
-    ORDER_MESSAGE_SEPARATOR,
     `_${formatOrderDate(date)} · pedido feito pelo site_`,
   );
 
@@ -412,15 +419,17 @@ export const LAST_ORDER_STORAGE_KEY = "pontodafarra:last-order";
 export const LAST_ORDER_TTL_MS = 24 * 60 * 60 * 1000;
 
 export type LastOrder = {
-  order: OrderPayload;
+  order: Pick<Order, "customerName" | "items" | "totalValue" | "deliveryFee">;
   itemNames: Record<string, string>;
   createdAt: string;
 };
 
-function normalizeOrderPayload(value: unknown): OrderPayload | null {
+function normalizeLastOrderOrder(
+  value: unknown,
+): LastOrder["order"] | null {
   if (!isRecord(value) || !Array.isArray(value.items)) return null;
 
-  const items: OrderItem[] = [];
+  const items: Order["items"] = [];
 
   for (const raw of value.items) {
     if (!isRecord(raw)) return null;
@@ -447,27 +456,31 @@ function normalizeOrderPayload(value: unknown): OrderPayload | null {
   }
 
   const totalValue = toFiniteNumber(value.totalValue);
+  const deliveryFee = toFiniteNumber(value.deliveryFee) ?? 0;
+  const customerName =
+    typeof value.customerName === "string" ? value.customerName : "";
 
   if (totalValue === null || totalValue < 0) return null;
 
-  const order: OrderPayload = { totalValue, items };
-
-  return isOrderValid(order) ? order : null;
+  return { customerName, items, totalValue, deliveryFee };
 }
 
 /**
- * Guarda o último pedido enviado para o WhatsApp, permitindo reenviar a
- * mensagem caso o cliente feche a conversa sem enviar.
+ * Guarda o último pedido enviado para o WhatsApp com os valores retornados pela API.
  */
 export function saveLastOrder(
-  order: OrderPayload,
+  order: Pick<Order, "customerName" | "items" | "totalValue" | "deliveryFee">,
   itemNames: Record<string, string>,
 ): void {
-  if (typeof window === "undefined" || !isOrderValid(order)) return;
+  if (typeof window === "undefined" || !order || !Array.isArray(order.items)) {
+    return;
+  }
 
   const snapshot: LastOrder = {
     order: {
+      customerName: order.customerName,
       totalValue: order.totalValue,
+      deliveryFee: order.deliveryFee ?? 0,
       items: order.items.map(({ productId, quantity, unitPrice }) => ({
         productId,
         quantity,
@@ -496,7 +509,7 @@ export function getLastOrder(): LastOrder | null {
 
     if (!isRecord(parsed)) return null;
 
-    const order = normalizeOrderPayload(parsed.order);
+    const order = normalizeLastOrderOrder(parsed.order);
 
     if (!order) return null;
 

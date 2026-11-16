@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { MessageCircle } from "lucide-react";
-import { isOrderValid } from "@/lib/cart";
+import { isOrderValid, type FulfillmentMethod } from "@/lib/cart";
 import { getWhatsAppNumber } from "@/lib/whatsapp";
 import { useUser } from "@/src/Context/UserContext";
 import OrderWhatsAppModal from "@/src/components/OrderWhatsAppModal";
@@ -14,6 +14,8 @@ export type { OrderItem, OrderPayload };
 interface WhatsAppOrderButtonProps {
   order: OrderPayload;
   itemNames: Record<string, string>;
+  fulfillmentMethod?: FulfillmentMethod;
+  onFulfillmentMethodChange?: (method: FulfillmentMethod) => void;
   isAvailable?: boolean;
   label?: string;
   onOrderSent?: () => void;
@@ -28,6 +30,8 @@ const buttonBase =
 export default function WhatsAppOrderButton({
   order,
   itemNames,
+  fulfillmentMethod: fulfillmentMethodProp,
+  onFulfillmentMethodChange,
   isAvailable = true,
   label = "Pedir pelo WhatsApp",
   onOrderSent,
@@ -36,9 +40,14 @@ export default function WhatsAppOrderButton({
   const [error, setError] = useState<string | null>(null);
   const { user, loading: userLoading } = useUser();
   const router = useRouter();
+  const [internalFulfillment, setInternalFulfillment] =
+    useState<FulfillmentMethod>("delivery");
 
   const number = getWhatsAppNumber();
   const hasItems = order.items.length > 0;
+  const fulfillmentMethod = fulfillmentMethodProp ?? internalFulfillment;
+  const setFulfillmentMethod =
+    onFulfillmentMethodChange ?? setInternalFulfillment;
 
   const disabledReason = !isAvailable
     ? "Produto indisponível"
@@ -103,6 +112,8 @@ export default function WhatsAppOrderButton({
         <OrderWhatsAppModal
           order={order}
           itemNames={itemNames}
+          fulfillmentMethod={fulfillmentMethod}
+          onFulfillmentMethodChange={setFulfillmentMethod}
           onClose={handleClose}
           onSent={handleOrderSent}
         />

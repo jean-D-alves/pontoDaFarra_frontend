@@ -1,6 +1,13 @@
 "use client";
 
-import { clearCart, buildOrderPayload, getCartItemNames, getItemSubtotal } from "@/lib/cart";
+import { useState } from "react";
+import {
+  clearCart,
+  buildOrderPayload,
+  getCartItemNames,
+  getItemSubtotal,
+  type FulfillmentMethod,
+} from "@/lib/cart";
 import { formatCurrency } from "@/src/Handle/Currency";
 import WhatsAppOrderButton from "@/src/components/WhatsAppOrderButton"; // ajuste o caminho
 import type { CartItem } from "@/src/types/cart";
@@ -11,11 +18,16 @@ type SideBarCartProps = {
 };
 
 export default function SideBarCart({ items }: SideBarCartProps) {
+  const [fulfillmentMethod, setFulfillmentMethod] =
+    useState<FulfillmentMethod>("delivery");
   const isEmpty = items.length === 0;
 
   const order = buildOrderPayload(items);
   const itemNames = getCartItemNames(items);
   const totalUnits = items.reduce((total, item) => total + item.quantity, 0);
+  const deliveryFee =
+    !isEmpty && fulfillmentMethod === "delivery" && order.totalValue > 25 ? 3 : 0;
+  const totalWithDelivery = order.totalValue + deliveryFee;
 
   return (
     <aside className="sticky top-6 flex w-full shrink-0 flex-col gap-4 self-start rounded-2xl border border-line bg-white p-5 md:w-1/3">
@@ -48,10 +60,24 @@ export default function SideBarCart({ items }: SideBarCartProps) {
           <span>{totalUnits}</span>
         </div>
 
+        <div className="flex items-center justify-between text-sm text-gray-500">
+          <span>Subtotal</span>
+          <span>{formatCurrency(order.totalValue)}</span>
+        </div>
+
+        <div className="flex items-center justify-between text-sm text-gray-500">
+          <span>Taxa de entrega</span>
+          <span>
+            {fulfillmentMethod === "pickup"
+              ? `${formatCurrency(0)} (retirada)`
+              : formatCurrency(deliveryFee)}
+          </span>
+        </div>
+
         <div className="flex items-center justify-between">
           <span className="font-semibold">Total</span>
           <strong className="text-xl text-gray-900">
-            {formatCurrency(order.totalValue)}
+            {formatCurrency(totalWithDelivery)}
           </strong>
         </div>
       </div>
@@ -59,6 +85,8 @@ export default function SideBarCart({ items }: SideBarCartProps) {
       <WhatsAppOrderButton
         order={order}
         itemNames={itemNames}
+        fulfillmentMethod={fulfillmentMethod}
+        onFulfillmentMethodChange={setFulfillmentMethod}
         onOrderSent={clearCart}
       />
 
