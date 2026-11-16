@@ -19,7 +19,7 @@ const poppins = Poppins({
 
 export const metadata: Metadata = {
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL!,
+    "https://ponto-da-farra.vercel.app"
   ),
   title: "Ponto da Farra | Distribuidora de bebidas",
   description: "Distribuidora de bebidas em Acari - RN",
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/pontodafarra-logo.png",
+        url: "/Image/PontoDaFarraIcon.jpeg",
         width: 1200,
         height: 630,
         alt: "Logo",
