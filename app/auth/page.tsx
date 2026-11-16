@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useState } from "react";
 import { useUser } from "@/src/Context/UserContext";
 import Image from "next/image";
 import { Eye, EyeOff } from "lucide-react";
 import { formatPhone, isValidPhone, phoneToDigits } from "@/src/Handle/phone";
 import { getActive } from "@/src/Handle/Legal";
+import { validatePasswordStrength } from "@/lib/password";
 import type { LegalDocument } from "@/src/types/legal";
 type FieldProps = {
   id: string;
@@ -18,6 +19,7 @@ type FieldProps = {
   onChange: (value: string) => void;
   error?: string;
   inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
+  autoComplete?: string;
 };
 
 function Field({
@@ -29,6 +31,7 @@ function Field({
   onChange,
   error,
   inputMode,
+  autoComplete,
 }: FieldProps) {
   const [visible, setVisible] = useState(false);
   const isPassword = type === "password";
@@ -41,6 +44,7 @@ function Field({
           id={id}
           type={isPassword && visible ? "text" : type}
           inputMode={inputMode}
+          autoComplete={autoComplete}
           placeholder={placeholder}
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -72,6 +76,21 @@ function Field({
   );
 }
 
+function PasswordChangedNotice() {
+  const searchParams = useSearchParams();
+
+  if (searchParams.get("motivo") !== "senha-alterada") return null;
+
+  return (
+    <p
+      role="status"
+      className="fixed left-1/2 top-20 z-30 w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 rounded-xl bg-available-bg px-4 py-2 text-center text-sm font-semibold text-available-text"
+    >
+      Senha alterada. Faça login novamente com a nova senha.
+    </p>
+  );
+}
+
 export default function Auth() {
   const router = useRouter();
   const { signIn, signUp } = useUser();
@@ -85,6 +104,7 @@ export default function Auth() {
   const [signUpNome, setSignUpNome] = useState("");
   const [signUpEmail, setSignUpEmail] = useState("");
   const [signUpSenha, setSignUpSenha] = useState("");
+  const [signUpSenhaError, setSignUpSenhaError] = useState<string | null>(null);
   const [signUpPhoneNumber, setSignUpPhoneNumber] = useState("");
 
   const [legalDocuments, setLegalDocuments] = useState<LegalDocument[] | null>(
@@ -134,6 +154,7 @@ export default function Auth() {
 
   function toggleScreen() {
     setError(null);
+    setSignUpSenhaError(null);
     const nextIsLogin = !isLogin;
     setIsLogin(nextIsLogin);
 
@@ -165,6 +186,22 @@ export default function Auth() {
   async function handleSignUp(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
+
+    if (!signUpSenha) {
+      setSignUpSenhaError("Informe uma senha.");
+      document.getElementById("signup-senha")?.focus();
+      return;
+    }
+
+    const passwordError = validatePasswordStrength(signUpSenha);
+
+    if (passwordError) {
+      setSignUpSenhaError(passwordError);
+      document.getElementById("signup-senha")?.focus();
+      return;
+    }
+
+    setSignUpSenhaError(null);
 
     if (!isValidPhone(signUpPhoneNumber)) {
       setError("Telefone inválido");
@@ -224,6 +261,10 @@ export default function Auth() {
         </Link>
       </header>
 
+      <Suspense fallback={null}>
+        <PasswordChangedNotice />
+      </Suspense>
+
       <div
         className={`min-h-screen w-full flex-1 items-center justify-center px-6 py-24 md:flex md:w-1/2 md:py-0 ${
           isLogin ? "flex" : "hidden"
@@ -245,6 +286,7 @@ export default function Auth() {
             id="signin-senha"
             label="Digite sua senha"
             type="password"
+            autoComplete="current-password"
             placeholder="Senha"
             value={signInSenha}
             onChange={setSignInSenha}
@@ -309,9 +351,14 @@ export default function Auth() {
             id="signup-senha"
             label="Digite sua senha"
             type="password"
+            autoComplete="new-password"
             placeholder="Senha"
             value={signUpSenha}
-            onChange={setSignUpSenha}
+            onChange={(value) => {
+              setSignUpSenha(value);
+              if (signUpSenhaError) setSignUpSenhaError(null);
+            }}
+            error={signUpSenhaError ?? undefined}
           />
           <Field
             id="signup-phonenumber"

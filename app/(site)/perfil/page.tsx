@@ -6,9 +6,10 @@ import ModelUpdate from "@/src/components/ModelUpdate";
 import OrderHistory from "@/src/components/profile/OrderHistory";
 import LocationList from "@/src/components/profile/LocationList";
 import LegalConsents from "@/src/components/profile/LegalConsents";
+import ChangePasswordForm from "@/src/components/profile/ChangePasswordForm";
 import { useUser } from "@/src/Context/UserContext";
 import { requestDeleteUser } from "@/src/Handle/User";
-import { PencilIcon } from "lucide-react";
+import { CheckCircle2, KeyRound, PencilIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type KeyboardEvent } from "react";
@@ -35,8 +36,17 @@ export default function Perfil() {
   const [loading, setLoading] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<string | null>(null);
   const [model, setModel] = useState<boolean>(false);
+  const [passwordOpen, setPasswordOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<ProfileTab>("orders");
+
+  useEffect(() => {
+    if (!feedback) return;
+
+    const timer = window.setTimeout(() => setFeedback(null), 4000);
+    return () => window.clearTimeout(timer);
+  }, [feedback]);
 
   function handleTabKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     const tabs = PROFILE_TABS.map((tab) => tab.id);
@@ -139,6 +149,26 @@ export default function Perfil() {
                   </Link>
                 )}
               </p>
+              <div aria-live="polite" role="status" className="w-full">
+                {feedback && (
+                  <p className="flex items-center justify-center gap-2 rounded-xl bg-available-bg px-3 py-2 text-sm font-semibold text-available-text">
+                    <CheckCircle2
+                      aria-hidden="true"
+                      size={16}
+                      className="shrink-0"
+                    />
+                    {feedback}
+                  </p>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => setPasswordOpen(true)}
+                className="flex items-center gap-2 rounded-xl border border-white/25 px-10 py-1 text-text transition hover:bg-white/10 md:py-2"
+              >
+                <KeyRound aria-hidden="true" size={16} />
+                <strong>Alterar senha</strong>
+              </button>
               <button
                 className="flex bg-brand-gradient text-ink px-15 py-1 rounded-xl cursor-pointer md:py-2"
                 onClick={() => handleLogout()}
@@ -158,6 +188,15 @@ export default function Perfil() {
               user={user}
               onClose={() => setModel(false)}
               refresh={refresh}
+            />
+          )}
+          {passwordOpen && (
+            <ChangePasswordForm
+              onClose={() => setPasswordOpen(false)}
+              onSuccess={(message) => {
+                setPasswordOpen(false);
+                setFeedback(message);
+              }}
             />
           )}
           {confirmDelete && (

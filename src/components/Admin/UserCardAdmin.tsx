@@ -3,12 +3,14 @@
 import { useEffect, useRef, useState } from "react";
 import {
   Eye,
+  KeyRound,
   MoreVertical,
   ShieldCheck,
   ShieldOff,
   Trash2,
 } from "lucide-react";
 import ConfirmMessage from "@/src/components/ConfirmMessage";
+import ResetUserPasswordModal from "@/src/components/Admin/ResetUserPasswordModal";
 import UserDetailModal from "@/src/components/Admin/UserDetailModal";
 import {
   requestDeleteUserById,
@@ -17,7 +19,7 @@ import {
 import { useUser } from "@/src/Context/UserContext";
 import type { User } from "@/src/types/User";
 
-type ActiveModal = "detail" | "delete" | null;
+type ActiveModal = "detail" | "password" | "delete" | null;
 
 type UserCardAdminProps = {
   user: User;
@@ -37,7 +39,7 @@ function getInitials(name: string): string {
 }
 
 export default function UserCardAdmin({ user, onChanged }: UserCardAdminProps) {
-  const { user: currentUser } = useUser();
+  const { user: currentUser, isAdmin } = useUser();
   const isSelf = currentUser?.userId === user.userId;
 
   const [menuOpen, setMenuOpen] = useState(false);
@@ -163,6 +165,18 @@ export default function UserCardAdmin({ user, onChanged }: UserCardAdminProps) {
                 Ver detalhes
               </button>
 
+              {isAdmin && (
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => openModal("password")}
+                  className={`${menuItemClass} text-body hover:bg-surface`}
+                >
+                  <KeyRound aria-hidden="true" size={16} />
+                  Redefinir senha
+                </button>
+              )}
+
               <button
                 type="button"
                 role="menuitem"
@@ -248,6 +262,17 @@ export default function UserCardAdmin({ user, onChanged }: UserCardAdminProps) {
         <UserDetailModal
           userId={user.userId}
           onClose={() => setActiveModal(null)}
+        />
+      )}
+
+      {activeModal === "password" && (
+        <ResetUserPasswordModal
+          user={user}
+          onClose={() => setActiveModal(null)}
+          onSuccess={(message) => {
+            setActiveModal(null);
+            onChanged(message);
+          }}
         />
       )}
 
