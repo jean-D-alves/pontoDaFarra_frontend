@@ -44,6 +44,39 @@ export const metadata: Metadata = {
     images: ["/Image/PontoDaFarraIcon.jpeg"],
   },
 };
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "LiquorStore",
+  name: "Ponto da Farra Distribuidora de Bebidas",
+  description: "Distribuidora de bebidas em Acari - RN",
+  url: "https://ponto-da-farra.vercel.app",
+  image: "https://ponto-da-farra.vercel.app/Image/PontoDaFarraIcon.jpeg",
+  telephone: "+55-84-99644-2187",
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: "R. Ana Fernandes, 413 - Ver. Tarcisio Bezerra Galvão",
+    addressLocality: "Acari",
+    addressRegion: "RN",
+    postalCode: "59370-000",
+    addressCountry: "BR",
+  },
+  openingHoursSpecification: [
+    {
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: [
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+      ],
+      opens: "08:00",
+      closes: "20:00",
+    },
+  ],
+};
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
@@ -52,6 +85,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${bebasNeue.variable} ${poppins.variable} h-full antialiased`}
     >
       <body className="flex min-h-screen flex-col">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+          }}
+        />
         <UserProvider>{children}</UserProvider>
       </body>
     </html>
