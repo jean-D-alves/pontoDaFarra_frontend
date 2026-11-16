@@ -18,9 +18,7 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    "https://ponto-da-farra.vercel.app"
-  ),
+  metadataBase: new URL("https://ponto-da-farra.vercel.app"),
   title: "Ponto da Farra | Distribuidora de bebidas",
   description: "Distribuidora de bebidas em Acari - RN",
   openGraph: {
@@ -33,11 +31,17 @@ export const metadata: Metadata = {
     images: [
       {
         url: "/Image/PontoDaFarraIcon.jpeg",
-        width: 1200,
-        height: 630,
-        alt: "Logo",
+        width: 1393,
+        height: 1129,
+        alt: "Ponto da Farra - Distribuidora de bebidas",
       },
     ],
+  },
+  twitter: {
+    card: "summary",
+    title: "Ponto da Farra",
+    description: "Distribuidora de bebidas em Acari - RN",
+    images: ["/Image/PontoDaFarraIcon.jpeg"],
   },
 };
 
